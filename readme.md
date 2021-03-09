@@ -27,10 +27,13 @@ curl -Lo /opt/apache-activemq-5.16.1/lib/ldaptive-1.3.0.jar https://repo1.maven.
 cp /opt/apache-activemq-5.16.1/conf/activemq.xml ~/projects/activemq-ldap-authorization/conf
 cp /opt/apache-activemq-5.16.1/conf/jetty.xml ~/projects/activemq-ldap-authorization/conf
 cp /opt/apache-activemq-5.16.1/conf/login.config ~/projects/activemq-ldap-authorization/conf
+cp /opt/apache-activemq-5.16.1/conf/log4j.properties ~/projects/activemq-ldap-authorization/conf
 
-copy ./conf/activemq.xml /opt/apache-activemq-5.16.1/conf/
-copy ./conf/jetty.xml /opt/apache-activemq-5.16.1/conf/
-copy ./conf/login.config /opt/apache-activemq-5.16.1/conf/
+cp ./conf/activemq.xml /opt/apache-activemq-5.16.1/conf/
+cp ./conf/jetty.xml /opt/apache-activemq-5.16.1/conf/
+cp ./conf/login.config /opt/apache-activemq-5.16.1/conf/
+cp ./conf/log4j.properties /opt/apache-activemq-5.16.1/conf/
+
 
 open http://localhost:8161/admin
 
