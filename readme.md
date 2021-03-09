@@ -1,5 +1,42 @@
 # ActiveMQ/AMQ LDAP Authentication and Authorization
 
+## ActiveMQ
+
+```bash
+cd /tmp
+curl -Lo apache-activemq-5.16.1-bin.tar.gz  https://www.apache.org/dist/activemq/5.16.1/apache-activemq-5.16.1-bin.tar.gz
+tar zxvf apache-activemq-5.16.1-bin.tar.gz
+sudo mv /tmp/apache-activemq-5.16.1 /opt/
+/opt/apache-activemq-5.16.1/bin/activemq start
+# sudo useradd activemq
+
+# ActiveMQ LDAP Web Console
+# https://eleipold.wordpress.com/author/eleipold/ 
+# https://www.workhorseintegrations.com/2020/05/14/securing-activemq-console-with-ldap/
+
+curl -Lo /opt/apache-activemq-5.16.1/lib/jetty-jaas-9.4.35.v20201120.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-jaas/9.4.35.v20201120/jetty-jaas-9.4.35.v20201120.jar
+
+curl -Lo /opt/apache-activemq-5.16.1/lib/jetty-plus-9.4.35.v20201120.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-plus/9.4.35.v20201120/jetty-plus-9.4.35.v20201120.jar
+
+curl -Lo /opt/apache-activemq-5.16.1/lib/jetty-security-9.4.35.v20201120.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-security/9.4.35.v20201120/jetty-security-9.4.35.v20201120.jar
+
+curl -Lo /opt/apache-activemq-5.16.1/lib/ldaptive-1.3.0.jar https://repo1.maven.org/maven2/org/ldaptive/ldaptive/1.3.0/ldaptive-1.3.0.jar
+
+/opt/apache-activemq-5.16.1/bin/activemq start && tail -f /opt/apache-activemq-5.16.1/data/activemq.log
+
+cp /opt/apache-activemq-5.16.1/conf/activemq.xml ~/projects/activemq-ldap-authorization/conf
+cp /opt/apache-activemq-5.16.1/conf/jetty.xml ~/projects/activemq-ldap-authorization/conf
+cp /opt/apache-activemq-5.16.1/conf/login.config ~/projects/activemq-ldap-authorization/conf
+
+copy ./conf/activemq.xml /opt/apache-activemq-5.16.1/conf/
+copy ./conf/jetty.xml /opt/apache-activemq-5.16.1/conf/
+copy ./conf/login.config /opt/apache-activemq-5.16.1/conf/
+
+open http://localhost:8161/admin
+
+/opt/apache-activemq-5.16.1/bin/activemq stop
+```
+
 ## RH Opened Issues
 
 * https://issues.jboss.org/browse/ENTESB-9310#
