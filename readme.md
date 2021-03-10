@@ -29,9 +29,6 @@ git clone git@github.com:eclipse/jetty.project.git
 cd jetty.project/
 git checkout tags/jetty-9.4.35.v20201120 -b my-jetty-9.4.35.v20201120
 
-mvn clean package -DskipTests -Dmaven.test.skip=true
-cp ~/projects/jetty.project/jetty-jaas/target/jetty-jaas-9.4.35.v20201120.jar /opt/apache-activemq-5.16.1/lib
-cp ~/projects/jetty.project/jetty-security/target/jetty-security-9.4.35.v20201120.jar /opt/apache-activemq-5.16.1/lib
 ```
 
 ## RH Opened Issues
