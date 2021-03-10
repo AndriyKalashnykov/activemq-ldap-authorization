@@ -83,14 +83,20 @@
         </persistenceAdapter>
 
         <plugins>
+
             <!-- <simpleAuthenticationPlugin>
                 <users>
                     <authenticationUser username="user" password="user"
                         groups="users"/>
                     <authenticationUser username="admin" password="admin"
-                        groups="admin"/>
+                        groups="admins"/>
                 </users>
             </simpleAuthenticationPlugin> -->
+
+            <!-- Enabled JAAS based authentication and references the LDAP 
+	        LoginModule defined in login.config in realm LDAPLogin
+	        -->
+	        <jaasAuthenticationPlugin configuration="LDAPLogin" />
     
             <authorizationPlugin>
             <map>
@@ -114,7 +120,7 @@
                 <bean id="lDAPAuthorizationMap" class="org.apache.activemq.security.LDAPAuthorizationMap"
                         xmlns="http://www.springframework.org/schema/beans">
                     <property name="initialContextFactory" value="com.sun.jndi.ldap.LdapCtxFactory"/>
-                    <property name="connectionURL" value="ldap://localhost:3891"/>
+                    <property name="connectionURL" value="ldap://localhost:389"/>
                     <property name="authentication" value="simple"/>
                     <property name="connectionUsername" value="uid=admin,ou=User,ou=ActiveMQ,dc=activemq,dc=apache,dc=org"/>
                     <property name="connectionPassword" value="admin"/>

@@ -13,6 +13,7 @@ sudo mv /tmp/apache-activemq-5.16.1 /opt/
 # ActiveMQ LDAP Web Console
 # https://eleipold.wordpress.com/author/eleipold/ 
 # https://www.workhorseintegrations.com/2020/05/14/securing-activemq-console-with-ldap/
+# https://github.com/tmielke/abloggerscode/blob/b154059f7df4c87fba26d7e65ad1dbb374a713c3/Articles/Blog/AMQJettyLDAP/jetty.xml
 
 curl -Lo /opt/apache-activemq-5.16.1/lib/jetty-jaas-9.4.35.v20201120.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-jaas/9.4.35.v20201120/jetty-jaas-9.4.35.v20201120.jar
 
@@ -39,6 +40,15 @@ open http://localhost:8161/admin
 
 /opt/apache-activemq-5.16.1/bin/activemq stop
 ```
+
+### Clone and build custom jetty
+
+```shell
+ git clone git@github.com:eclipse/jetty.project.git
+ cd jetty.project/
+ git checkout tags/jetty-9.4.35.v20201120 -b my-jetty-9.4.35.v20201120
+ mvn clean install
+ ```
 
 ## RH Opened Issues
 
