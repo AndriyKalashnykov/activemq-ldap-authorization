@@ -10,7 +10,7 @@
 # https://www.workhorseintegrations.com/2020/05/14/securing-activemq-console-with-ldap/
 # https://github.com/tmielke/abloggerscode/blob/b154059f7df4c87fba26d7e65ad1dbb374a713c3/Articles/Blog/AMQJettyLDAP/jetty.xml
 
-/opt/apache-activemq-5.16.1/bin/activemq start && tail -f /opt/apache-activemq-5.16.1/data/activemq.log
+
 
 cp /opt/apache-activemq-5.16.1/conf/activemq.xml ~/projects/activemq-ldap-authorization/conf
 cp /opt/apache-activemq-5.16.1/conf/jetty.xml ~/projects/activemq-ldap-authorization/conf
@@ -19,7 +19,7 @@ cp /opt/apache-activemq-5.16.1/conf/log4j.properties ~/projects/activemq-ldap-au
 
 open http://localhost:8161/admin
 
-/opt/apache-activemq-5.16.1/bin/activemq stop
+
 ```
 
 ### Clone and build custom jetty
