@@ -3,25 +3,12 @@
 ## ActiveMQ
 
 ```bash
-cd /tmp
-curl -Lo apache-activemq-5.16.1-bin.tar.gz  https://www.apache.org/dist/activemq/5.16.1/apache-activemq-5.16.1-bin.tar.gz
-tar zxvf apache-activemq-5.16.1-bin.tar.gz
-sudo mv /tmp/apache-activemq-5.16.1 /opt/
-/opt/apache-activemq-5.16.1/bin/activemq start
-# sudo useradd activemq
+./scripts/install-activemq.sh
 
 # ActiveMQ LDAP Web Console
 # https://eleipold.wordpress.com/author/eleipold/ 
 # https://www.workhorseintegrations.com/2020/05/14/securing-activemq-console-with-ldap/
 # https://github.com/tmielke/abloggerscode/blob/b154059f7df4c87fba26d7e65ad1dbb374a713c3/Articles/Blog/AMQJettyLDAP/jetty.xml
-
-curl -Lo /opt/apache-activemq-5.16.1/lib/jetty-jaas-9.4.35.v20201120.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-jaas/9.4.35.v20201120/jetty-jaas-9.4.35.v20201120.jar
-
-curl -Lo /opt/apache-activemq-5.16.1/lib/jetty-plus-9.4.35.v20201120.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-plus/9.4.35.v20201120/jetty-plus-9.4.35.v20201120.jar
-
-curl -Lo /opt/apache-activemq-5.16.1/lib/jetty-security-9.4.35.v20201120.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-security/9.4.35.v20201120/jetty-security-9.4.35.v20201120.jar
-
-curl -Lo /opt/apache-activemq-5.16.1/lib/ldaptive-1.3.0.jar https://repo1.maven.org/maven2/org/ldaptive/ldaptive/1.3.0/ldaptive-1.3.0.jar
 
 /opt/apache-activemq-5.16.1/bin/activemq start && tail -f /opt/apache-activemq-5.16.1/data/activemq.log
 
@@ -29,12 +16,6 @@ cp /opt/apache-activemq-5.16.1/conf/activemq.xml ~/projects/activemq-ldap-author
 cp /opt/apache-activemq-5.16.1/conf/jetty.xml ~/projects/activemq-ldap-authorization/conf
 cp /opt/apache-activemq-5.16.1/conf/login.config ~/projects/activemq-ldap-authorization/conf
 cp /opt/apache-activemq-5.16.1/conf/log4j.properties ~/projects/activemq-ldap-authorization/conf
-
-cp ./conf/activemq.xml /opt/apache-activemq-5.16.1/conf/
-cp ./conf/jetty.xml /opt/apache-activemq-5.16.1/conf/
-cp ./conf/login.config /opt/apache-activemq-5.16.1/conf/
-cp ./conf/log4j.properties /opt/apache-activemq-5.16.1/conf/
-
 
 open http://localhost:8161/admin
 
@@ -44,11 +25,14 @@ open http://localhost:8161/admin
 ### Clone and build custom jetty
 
 ```shell
- git clone git@github.com:eclipse/jetty.project.git
- cd jetty.project/
- git checkout tags/jetty-9.4.35.v20201120 -b my-jetty-9.4.35.v20201120
- mvn clean install
- ```
+git clone git@github.com:eclipse/jetty.project.git
+cd jetty.project/
+git checkout tags/jetty-9.4.35.v20201120 -b my-jetty-9.4.35.v20201120
+
+mvn clean package -DskipTests -Dmaven.test.skip=true
+cp ~/projects/jetty.project/jetty-jaas/target/jetty-jaas-9.4.35.v20201120.jar /opt/apache-activemq-5.16.1/lib
+cp ~/projects/jetty.project/jetty-security/target/jetty-security-9.4.35.v20201120.jar /opt/apache-activemq-5.16.1/lib
+```
 
 ## RH Opened Issues
 
