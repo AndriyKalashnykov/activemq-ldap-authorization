@@ -1,0 +1,150 @@
+version: 1 
+ # 
+ # Sample LDIF for ActiveMQ LDAP authentication and authorisation 
+ # Passwords are defaulted to "password" - it is your responsibility to change them! 
+ # 
+ # Sets up: 
+ # 1. Bind user 
+ # 2. A sample queue with admin,read,write permission assignments 
+ # 3. ActiveMQ advisory topics 
+ # 4. Two groups - admin and webapp 
+ # 5. Two users - admin and webapp 
+ # 6. Role assignments - admin->admin, webapp->webapp 
+ # 
+ # (c) Robin Bramley 2008 # Provided as is without any warranty of any kind 
+ # 
+ dn: dc=acme,dc=com 
+ dc: acme 
+ objectClass: domain 
+ objectClass: top 
+    
+ dn: ou=Services,dc=acme,dc=com 
+ ou: Services 
+ objectClass: organizationalUnit 
+ objectClass: top 
+    
+ dn: cn=mqbroker,ou=Services,dc=acme,dc=com 
+ cn: mqbroker 
+ objectClass: organizationalRole 
+ objectClass: top 
+ objectClass: simpleSecurityObject 
+ userPassword: {SHA}0DPiKuNIrrVmD8IUCuw1hQxNqZc=
+ description: Bind user for MQ broker 
+    
+ dn: ou=systems,dc=acme,dc=com 
+ ou: systems 
+ objectClass: organizationalUnit 
+ objectClass: top 
+    
+ dn: ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ objectClass: organizationalUnit 
+ objectClass: top 
+ ou: ActiveMQ 
+    
+ dn: ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ objectClass: organizationalUnit 
+ objectClass: top 
+ ou: Destination 
+    
+ dn: ou=Queue,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ objectClass: organizationalUnit 
+ objectClass: top 
+ ou: Queue 
+    
+ dn: cn=com.acme.myfirstrealqueue,ou=Queue,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ cn: com.acme.myfirstrealqueue 
+ description: A queue 
+ objectClass: applicationProcess 
+ objectClass: top 
+    
+ dn: cn=admin,cn=com.acme.myfirstrealqueue,ou=Queue,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ cn: admin 
+ description: Admin privilege group, members are roles 
+ member: cn=admin 
+ member: cn=webapp 
+ objectClass: groupOfNames 
+ objectClass: top 
+    
+ dn: cn=read,cn=com.acme.myfirstrealqueue,ou=Queue,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ cn: read member: cn=webapp 
+ objectClass: groupOfNames 
+ objectClass: top 
+    
+ dn: cn=write,cn=com.acme.myfirstrealqueue,ou=Queue,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ cn: write 
+ objectClass: groupOfNames 
+ objectClass: top member: cn=webapp 
+    
+ dn: ou=Topic,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ objectClass: organizationalUnit 
+ objectClass: top 
+ ou: Topic 
+    
+ dn: cn=ActiveMQ.Advisory.Consumer,ou=Topic,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ cn: ActiveMQ.Advisory.Consumer 
+ objectClass: applicationProcess 
+ objectClass: top description: Advisory topic about consumers 
+    
+ dn: cn=read,cn=ActiveMQ.Advisory.Consumer,ou=Topic,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ cn: read member: cn=webapp 
+ objectClass: groupOfNames 
+ objectClass: top 
+    
+ dn: cn=ActiveMQ.Advisory.TempQueue,ou=Topic,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ cn: ActiveMQ.Advisory.TempQueue 
+ description: Advisory topic about temporary queues 
+ objectClass: applicationProcess 
+ objectClass: top 
+    
+ dn: cn=read,cn=ActiveMQ.Advisory.TempQueue,ou=Topic,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ cn: read member: cn=webapp 
+ objectClass: groupOfNames 
+ objectClass: top 
+    
+ dn: cn=ActiveMQ.Advisory.TempTopic,ou=Topic,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ cn: ActiveMQ.Advisory.TempTopic 
+ objectClass: applicationProcess 
+ objectClass: top 
+ description: Advisory topic about temporary topics 
+    
+ dn: cn=read,cn=ActiveMQ.Advisory.TempTopic,ou=Topic,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ cn: read 
+ member: cn=webapp 
+ objectClass: groupOfNames 
+ objectClass: top 
+    
+ dn: ou=Group,ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ objectClass: organizationalUnit 
+ objectClass: top 
+ ou: Group 
+    
+ dn: cn=admin,ou=Group,ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ cn: admin 
+ member: uid=admin 
+ objectClass: groupOfNames 
+ objectClass: top 
+    
+ dn: cn=webapp,ou=Group,ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ cn: webapp 
+ member: uid=webapp 
+ objectClass: groupOfNames 
+ objectClass: top 
+    
+ dn: ou=User,ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ objectClass: organizationalUnit 
+ objectClass: top 
+ ou: User 
+    
+ dn: uid=admin,ou=User,ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ uid: admin 
+ userPassword: {SHA}0DPiKuNIrrVmD8IUCuw1hQxNqZc=
+ objectClass: account 
+ objectClass: simpleSecurityObject 
+ objectClass: top 
+    
+ dn: uid=webapp,ou=User,ou=ActiveMQ,ou=systems,dc=acme,dc=com 
+ uid: webapp 
+ userPassword: {SHA}0DPiKuNIrrVmD8IUCuw1hQxNqZc=
+ objectClass: account 
+ objectClass: simpleSecurityObject 
+ objectClass: top

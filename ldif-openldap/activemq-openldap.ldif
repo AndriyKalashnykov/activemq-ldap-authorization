@@ -37,7 +37,7 @@ cn: mqbroker
 objectClass: organizationalRole
 objectClass: top
 objectClass: simpleSecurityObject
-userPassword: {SSHA}azLxlMkpBe3cZPVBYo5cgeFVSY6AhUNx
+userPassword: {SHA}0DPiKuNIrrVmD8IUCuw1hQxNqZc=
 description: Bind user for MQ broker
 
 
@@ -76,7 +76,7 @@ ou: User
 
 dn: uid=admin,ou=User,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 uid: admin
-userPassword: {SSHA}azLxlMkpBe3cZPVBYo5cgeFVSY6AhUNx
+userPassword: {SHA}0DPiKuNIrrVmD8IUCuw1hQxNqZc=
 objectclass: uidObject
 objectclass: organizationalPerson
 objectclass: person
@@ -86,7 +86,7 @@ sn: admin
 
 dn: uid=client,ou=User,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 uid: client
-userPassword: {SSHA}azLxlMkpBe3cZPVBYo5cgeFVSY6AhUNx
+userPassword: {SHA}0DPiKuNIrrVmD8IUCuw1hQxNqZc=
 objectclass: uidObject
 objectclass: organizationalPerson
 objectclass: person
@@ -124,19 +124,19 @@ objectclass: top
 dn: cn=admin,cn=$,ou=Queue,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 cn: admin
 description: Admin privilege group, members are roles
-member: cn=admins
+member: cn=admins,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 objectclass: groupOfNames
 objectclass: top
 
 dn: cn=read,cn=$,ou=Queue,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 cn: read
-member: cn=admins
+member: cn=admins,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 objectclass: groupOfNames
 objectclass: top
 
 dn: cn=write,cn=$,ou=Queue,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 cn: write
-member: cn=admins
+member: cn=admins,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 objectclass: groupOfNames
 objectclass: top
 
@@ -150,22 +150,22 @@ description: All topics
 
 dn: cn=read,cn=VirtualTopic.Topic.$,ou=Topic,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 cn: read
-member: cn=admins
-member: cn=users
+member: cn=admins,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
+member: cn=users,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 objectClass: groupOfNames
 objectClass: top
 
 dn: cn=write,cn=VirtualTopic.Topic.$,ou=Topic,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 cn: write
-member: cn=admins
-member: cn=users
+member: cn=admins,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
+member: cn=users,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 objectClass: groupOfNames
 objectClass: top
 
 dn: cn=admin,cn=VirtualTopic.Topic.$,ou=Topic,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 cn: admin
-member: cn=admins
-member: cn=users
+member: cn=admins,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
+member: cn=users,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 objectClass: groupOfNames
 objectClass: top
 
@@ -181,22 +181,22 @@ description: Advisory topics
 
 dn: cn=read,cn=ActiveMQ.Advisory.$,ou=Topic,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 cn: read
-member: cn=admins
-member: cn=users
+member: cn=admins,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
+member: cn=users,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 objectClass: groupOfNames
 objectClass: top
 
 dn: cn=write,cn=ActiveMQ.Advisory.$,ou=Topic,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 cn: write
-member: cn=admins
-member: cn=users
+member: cn=admins,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
+member: cn=users,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 objectClass: groupOfNames
 objectClass: top
 
 dn: cn=admin,cn=ActiveMQ.Advisory.$,ou=Topic,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 cn: admin
-member: cn=admins
-member: cn=users
+member: cn=admins,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
+member: cn=users,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 objectClass: groupOfNames
 objectClass: top
 
@@ -211,22 +211,22 @@ ou: Temp
 
 dn: cn=read,ou=Temp,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 cn: read
-member: cn=admins
-member: cn=users
+member: cn=admins,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
+member: cn=users,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 objectClass: groupOfNames
 objectClass: top
 
 dn: cn=write,ou=Temp,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 cn: write
-member: cn=admins
-member: cn=users
+member: cn=admins,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
+member: cn=users,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 objectClass: groupOfNames
 objectClass: top
 
 dn: cn=admin,ou=Temp,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 cn: admin
-member: cn=admins
-member: cn=users
+member: cn=admins,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
+member: cn=users,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 objectClass: groupOfNames
 objectClass: top
 

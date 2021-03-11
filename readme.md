@@ -53,13 +53,13 @@ mkdir /tmp/ldif
 
 cp ./ldif-openldap/activemq-openldap.ldif /tmp/ldif
 
-docker run -d --rm -p 389:389 -v /tmp/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom -e LDAP_DOMAIN=activemq.apache.org -e LDAP_ORGANISATION="Apache ActiveMQ Test Org" -e LDAP_ROOTPASS=admin --name openldap-container osixia/openldap:1.2.1 --copy-service
+docker run -d --rm -p 389:389 -v /tmp/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom -e LDAP_DOMAIN=activemq.apache.org -e LDAP_ORGANISATION="Apache ActiveMQ Test Org" -e LDAP_ROOTPASS=admin --name openldap-container osixia/openldap:1.5.0 --copy-service
 ```
 
 or
 
 ```bash
-docker run --rm -d -p 389:389 -v $(PWD)\ldif-openldap:/container/service/slapd/assets/config/bootstrap/ldif/custom -e LDAP_DOMAIN=activemq.apache.org -e LDAP_ORGANISATION="Apache ActiveMQ Test Org" -e LDAP_ROOTPASS=admin --name openldap-container osixia/openldap:1.2.1 --copy-service
+docker run --rm -d -p 389:389 -v $(PWD)\ldif-openldap:/container/service/slapd/assets/config/bootstrap/ldif/custom -e LDAP_DOMAIN=activemq.apache.org -e LDAP_ORGANISATION="Apache ActiveMQ Test Org" -e LDAP_ROOTPASS=admin --name openldap-container osixia/openldap:1.5.0 --copy-service
 ```
 
 Verify that ldif files are mounted

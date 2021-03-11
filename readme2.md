@@ -22,7 +22,7 @@ OpenLDAP server
 
 	Run
 	-
-		docker run --rm -p 389:389 -v c:\projects\ihg\projects\docker-ldap-amq\ldif-openldap:/container/service/slapd/assets/config/bootstrap/ldif/custom -e LDAP_DOMAIN=activemq.apache.org -e LDAP_ORGANISATION="Apache ActiveMQ Test Org" -e LDAP_ROOTPASS=admin --name openldap-container osixia/openldap:1.2.1 --copy-service
+		docker run --rm -p 389:389 -v c:\projects\ihg\projects\docker-ldap-amq\ldif-openldap:/container/service/slapd/assets/config/bootstrap/ldif/custom -e LDAP_DOMAIN=activemq.apache.org -e LDAP_ORGANISATION="Apache ActiveMQ Test Org" -e LDAP_ROOTPASS=admin --name openldap-container osixia/openldap:1.5.0 --copy-service
 		
 		suffix 			: "dc=activemq,dc=apache,dc=org"
 		rootdn			: "cn=admin,dc=activemq,dc=apache,dc=org"
