@@ -53,13 +53,13 @@ ou: Group
 
 dn: cn=admins,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 cn: admins
-member: uid=admin,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
+member: uid=admin
 objectClass: groupOfNames
 objectClass: top
 
 dn: cn=users,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 cn: users
-member: uid=client,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
+member: uid=client
 objectClass: groupOfNames
 objectClass: top
 
