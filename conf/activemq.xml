@@ -122,7 +122,7 @@
                     <property name="initialContextFactory" value="com.sun.jndi.ldap.LdapCtxFactory"/>
                     <property name="connectionURL" value="ldap://localhost:389"/>
                     <property name="authentication" value="simple"/>
-                    <property name="connectionUsername" value="uid=admin,ou=User,ou=ActiveMQ,dc=activemq,dc=apache,dc=org"/>
+                    <property name="connectionUsername" value="cn=admin,dc=activemq,dc=apache,dc=org"/>
                     <property name="connectionPassword" value="admin"/>
                     <property name="connectionProtocol" value=""/>
                     <property name="topicSearchMatchingFormat" value="cn={0},ou=Topic,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org"/>
@@ -138,6 +138,27 @@
                     <property name="writeBase" value="(cn=write)"/>
                     <property name="writeAttribute" value="member"/>
                 </bean>
+
+                <!-- <bean xmlns="http://www.springframework.org/schema/beans" id="lDAPAuthorizationMap-activemq-example" class="org.apache.activemq.security.LDAPAuthorizationMap"> 
+                    <property name="initialContextFactory" value="com.sun.jndi.ldap.LdapCtxFactory"/> 
+                    <property name="connectionURL" value="ldap://localhost:389"/> 
+                    <property name="authentication" value="simple"/> 
+                    <property name="connectionUsername" value="cn=mqbroker,ou=Services,dc=acme,dc=com"/> 
+                    <property name="connectionPassword" value="password"/> 
+                    <property name="connectionProtocol" value=""/> 
+                    <property name="topicSearchMatchingFormat" value="cn={0},ou=Topic,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com"/> 
+                    <property name="topicSearchSubtreeBool" value="true"/> 
+                    <property name="queueSearchMatchingFormat" value="cn={0},ou=Queue,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com"/> 
+                    <property name="queueSearchSubtreeBool" value="true"/> 
+                    <property name="advisorySearchBase" value="cn=ActiveMQ.Advisory.$,ou=Topic,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com"/>
+                    <property name="tempSearchBase" value="ou=Temp,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com"/>
+                    <property name="adminBase" value="(cn=admin)"/> 
+                    <property name="adminAttribute" value="member"/> 
+                    <property name="readBase" value="(cn=read)"/> 
+                    <property name="readAttribute" value="member"/> 
+                    <property name="writeBase" value="(cn=write)"/> 
+                    <property name="writeAttribute" value="member"/> 
+                  </bean> -->
             </map>
         </authorizationPlugin>
 	  

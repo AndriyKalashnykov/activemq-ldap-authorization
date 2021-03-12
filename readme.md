@@ -21,7 +21,7 @@ open http://localhost:8161/admin
 
 # search for a group 
 
-ldapsearch -x -H ldap://localhost:389 -a always -b "ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org" -s sub "(&(objectClass=groupOfNames)(member=uid=admin,ou=user,ou=activemq,dc=activemq,dc=apache,dc=org))" -D "cn=admin,dc=activemq,dc=apache,dc=org" -w admin cn
+ldapsearch -x -H ldap://localhost:389 -a always -D "cn=admin,dc=activemq,dc=apache,dc=org" -w admin -b "ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org" -s sub "(&(objectClass=groupOfNames)(member=uid=admin,ou=user,ou=activemq,dc=activemq,dc=apache,dc=org))"  cn
 
 604a6bdf conn=1001 fd=12 ACCEPT from IP=172.17.0.1:50938 (IP=0.0.0.0:389)
 604a6bdf conn=1001 op=0 BIND dn="cn=admin,dc=activemq,dc=apache,dc=org" method=128
@@ -40,9 +40,9 @@ ldapsearch -x -H ldap://localhost:389 -a always -b "ou=Group,ou=ActiveMQ,dc=acti
 604a6bdf conn=1001 fd=12 closed
 
 
+ldapsearch -x -H ldap://localhost:389 -a always -D "cn=admin,dc=activemq,dc=apache,dc=org" -w admin -b "ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org" -s sub "(&(objectClass=groupOfNames)(member:=uid=admin))" cn
 
-
-ldapsearch -x -H ldap://localhost:389 -a always -b "ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org" -s sub "(&(objectClass=groupOfNames)(member:=uid=admin))" -D "cn=admin,dc=activemq,dc=apache,dc=org" -w admin cn
+docker exec openldap ldapsearch -x -H ldap://localhost:389 -b ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org -s sub "(&(objectClass=groupOfNames)(member:=uid=admin))" -D "cn=admin,dc=activemq,dc=apache,dc=org" -w admin cn
 
 604a5395 conn=1017 fd=12 ACCEPT from IP=172.17.0.1:52720 (IP=0.0.0.0:389)
 604a5395 conn=1017 op=0 BIND dn="cn=admin,dc=activemq,dc=apache,dc=org" method=128

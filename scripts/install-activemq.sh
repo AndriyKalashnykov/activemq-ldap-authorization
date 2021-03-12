@@ -8,6 +8,7 @@ cd $SCRIPT_PARENT_DIR
 
 ACTIVEMQ_VER=5.16.1
 JETTY_VER=9.4.35.v20201120
+LDAPTIVE_VER=1.2.4
 
 sudo rm -rf /opt/apache-activemq-$ACTIVEMQ_VER/
 
@@ -25,7 +26,7 @@ sudo mv /tmp/apache-activemq-$ACTIVEMQ_VER /opt/
 
 curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/jetty-jaas-$JETTY_VER.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-jaas/$JETTY_VER/jetty-jaas-$JETTY_VER.jar
 curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/jetty-security-$JETTY_VER.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-security/$JETTY_VER/jetty-security-$JETTY_VER.jar
-curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/ldaptive-1.3.0.jar https://repo1.maven.org/maven2/org/ldaptive/ldaptive/1.3.0/ldaptive-1.3.0.jar
+curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/ldaptive-$LDAPTIVE_VER.jar https://repo1.maven.org/maven2/org/ldaptive/ldaptive/$LDAPTIVE_VER/ldaptive-$LDAPTIVE_VER.jar
 
 cd $SCRIPT_PARENT_DIR
 

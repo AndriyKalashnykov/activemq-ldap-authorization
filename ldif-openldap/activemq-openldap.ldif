@@ -20,8 +20,6 @@
 ## Define basic objects ##
 ##########################
 
-# Already defined
-
 dn: ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 objectClass: organizationalUnit
 objectClass: top
@@ -41,29 +39,6 @@ userPassword: {SHA}0DPiKuNIrrVmD8IUCuw1hQxNqZc=
 description: Bind user for MQ broker
 
 
-###################
-## Define groups ##
-###################
-
-
-dn: ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
-objectClass: organizationalUnit
-objectClass: top
-ou: Group
-
-dn: cn=admins,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
-cn: admins
-member: cn=admin,ou=user,ou=activemq,dc=activemq,dc=apache,dc=org
-objectClass: groupOfNames
-objectClass: top
-
-dn: cn=users,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
-cn: users
-member: cn=client,ou=user,ou=activemq,dc=activemq,dc=apache,dc=org
-objectClass: groupOfNames
-objectClass: top
-
-
 ##################
 ## Define users ##
 ##################
@@ -74,7 +49,7 @@ objectClass: organizationalUnit
 objectClass: top
 ou: User
 
-dn: cn=admin,ou=User,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
+dn: uid=admin,ou=User,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 uid: admin
 userPassword: {SHA}0DPiKuNIrrVmD8IUCuw1hQxNqZc=
 objectclass: uidObject
@@ -84,7 +59,7 @@ objectclass: top
 cn: admin
 sn: admin
 
-dn: cn=client,ou=User,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
+dn: uid=client,ou=User,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 uid: client
 userPassword: {SHA}0DPiKuNIrrVmD8IUCuw1hQxNqZc=
 objectclass: uidObject
@@ -93,6 +68,27 @@ objectclass: person
 objectclass: top
 cn: client
 sn: client
+
+###################
+## Define groups ##
+###################
+
+dn: ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
+objectClass: organizationalUnit
+objectClass: top
+ou: Group
+
+dn: cn=admins,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
+cn: admins
+member: uid=admin
+objectClass: groupOfNames
+objectClass: top
+
+dn: cn=users,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
+cn: users
+member: uid=client
+objectClass: groupOfNames
+objectClass: top
 
 #########################
 ## Define destinations ##
