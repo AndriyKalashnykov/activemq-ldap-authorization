@@ -19,6 +19,41 @@ cp /opt/apache-activemq-5.16.1/conf/log4j.properties ~/projects/activemq-ldap-au
 
 open http://localhost:8161/admin
 
+# search for a group 
+
+ldapsearch -x -H ldap://localhost:389 -a always -b "ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org" -s sub "(&(objectClass=groupOfNames)(member=uid=admin,ou=user,ou=activemq,dc=activemq,dc=apache,dc=org))" -D "cn=admin,dc=activemq,dc=apache,dc=org" -w admin cn
+
+604a6bdf conn=1001 fd=12 ACCEPT from IP=172.17.0.1:50938 (IP=0.0.0.0:389)
+604a6bdf conn=1001 op=0 BIND dn="cn=admin,dc=activemq,dc=apache,dc=org" method=128
+604a6bdf conn=1001 op=0 BIND dn="cn=admin,dc=activemq,dc=apache,dc=org" mech=SIMPLE ssf=0
+604a6bdf conn=1001 op=0 RESULT tag=97 err=0 text=
+604a6bdf conn=1001 op=1 SRCH base="ou=User,ou=ActiveMQ,dc=activemq,dc=apache,dc=org" scope=2 deref=3 filter="(&(objectClass=uidObject)(uid=admin))"
+604a6bdf conn=1001 op=1 SEARCH RESULT tag=101 err=0 nentries=1 text=
+604a6bdf conn=1002 fd=13 ACCEPT from IP=172.17.0.1:50942 (IP=0.0.0.0:389)
+604a6bdf conn=1002 op=0 BIND dn="uid=admin,ou=User,ou=ActiveMQ,dc=activemq,dc=apache,dc=org" method=128
+604a6bdf conn=1002 op=0 BIND dn="uid=admin,ou=User,ou=ActiveMQ,dc=activemq,dc=apache,dc=org" mech=SIMPLE ssf=0
+604a6bdf conn=1002 op=0 RESULT tag=97 err=0 text=
+604a6bdf conn=1002 op=1 SRCH base="ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org" scope=2 deref=3 filter="(&(objectClass=groupOfNames)(member=uid=admin,ou=user,ou=activemq,dc=activemq,dc=apache,dc=org))"
+604a6bdf conn=1002 op=1 SRCH attr=cn
+604a6bdf conn=1002 op=1 SEARCH RESULT tag=101 err=32 nentries=0 text=
+604a6bdf conn=1001 op=2 UNBIND
+604a6bdf conn=1001 fd=12 closed
+
+
+
+
+ldapsearch -x -H ldap://localhost:389 -a always -b "ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org" -s sub "(&(objectClass=groupOfNames)(member:=uid=admin))" -D "cn=admin,dc=activemq,dc=apache,dc=org" -w admin cn
+
+604a5395 conn=1017 fd=12 ACCEPT from IP=172.17.0.1:52720 (IP=0.0.0.0:389)
+604a5395 conn=1017 op=0 BIND dn="cn=admin,dc=activemq,dc=apache,dc=org" method=128
+604a5395 conn=1017 op=0 BIND dn="cn=admin,dc=activemq,dc=apache,dc=org" mech=SIMPLE ssf=0
+604a5395 conn=1017 op=0 RESULT tag=97 err=0 text=
+604a5395 conn=1017 op=1 SRCH base="ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org" scope=2 deref=3 filter="(&(objectClass=groupOfNames)(member:=uid=admin))"
+604a5395 conn=1017 op=1 SRCH attr=cn
+604a5395 conn=1017 op=1 SEARCH RESULT tag=101 err=0 nentries=1 text=
+604a5395 conn=1017 op=2 UNBIND
+604a5395 conn=1017 fd=12 closed
+
 
 ```
 

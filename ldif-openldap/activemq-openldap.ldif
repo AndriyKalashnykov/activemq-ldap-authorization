@@ -53,13 +53,13 @@ ou: Group
 
 dn: cn=admins,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 cn: admins
-member: uid=admin
+member: cn=admin,ou=user,ou=activemq,dc=activemq,dc=apache,dc=org
 objectClass: groupOfNames
 objectClass: top
 
 dn: cn=users,ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 cn: users
-member: uid=client
+member: cn=client,ou=user,ou=activemq,dc=activemq,dc=apache,dc=org
 objectClass: groupOfNames
 objectClass: top
 
@@ -74,7 +74,7 @@ objectClass: organizationalUnit
 objectClass: top
 ou: User
 
-dn: uid=admin,ou=User,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
+dn: cn=admin,ou=User,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 uid: admin
 userPassword: {SHA}0DPiKuNIrrVmD8IUCuw1hQxNqZc=
 objectclass: uidObject
@@ -84,7 +84,7 @@ objectclass: top
 cn: admin
 sn: admin
 
-dn: uid=client,ou=User,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
+dn: cn=client,ou=User,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 uid: client
 userPassword: {SHA}0DPiKuNIrrVmD8IUCuw1hQxNqZc=
 objectclass: uidObject
