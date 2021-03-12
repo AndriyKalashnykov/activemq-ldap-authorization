@@ -156,7 +156,8 @@
            	<bean id="Connector" class="org.eclipse.jetty.server.ServerConnector">
            		<constructor-arg ref="Server" />
                     <!-- see the jettyPort bean -->
-                   <property name="host" value="#{systemProperties['jetty.host']}" />
+                   <!-- <property name="host" value="#{systemProperties['jetty.host']}" /> -->
+                   <property name="host" value="0.0.0.0" />
                    <property name="port" value="#{systemProperties['jetty.port']}" />
                </bean>
                 <!--

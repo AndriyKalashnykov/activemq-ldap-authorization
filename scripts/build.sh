@@ -11,7 +11,4 @@ cd $ACTIVEMQ_VER
 docker rmi -f ${DOCKER_LOGIN}/$IMAGE_NAME:$ACTIVEMQ_VER
 DOCKER_BUILDKIT=1 docker build -f Dockerfile -t ${DOCKER_LOGIN}/$IMAGE_NAME:$ACTIVEMQ_VER .
 
-docker login --username=${DOCKER_LOGIN} --password ${DOCKER_PWD} ${DOCKER_REGISTRY}
-docker push ${DOCKER_LOGIN}/$IMAGE_NAME:$ACTIVEMQ_VER
-
 cd $LAUNCH_DIR

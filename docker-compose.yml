@@ -1,0 +1,84 @@
+version: "3.8"
+
+services:
+  # ldaptive:
+  #   image: maven:3.6-jdk-11
+  #   ports:
+  #     - "8161:8161"
+  #     - "636:636"    
+  #   volumes:
+  #     - $PWD:/apps/ldaptive
+  #   environment:
+  #     - HOST=ldap-test:389
+  #     - BASE_DN=ou=test,dc=vt,dc=edu
+  #     - BIND_DN=uid=1,ou=test,dc=vt,dc=edu
+  #     - BIND_CREDENTIAL=VKSxXwlU7YssGl1foLMH2mGMWkifbODb1djfJ4t2
+  #     - TEST_GROUP
+  #   networks:
+  #     ldap_net:
+  #       ipv4_address: 172.28.1.10
+  #   command: >
+  #     bash -c "export DEBIAN_FRONTEND=noninteractive &&
+  #     apt-get update && apt-get install -y net-tools krb5-user &&
+  #     /apps/ldaptive/integration/krb5_init &&
+  #     cd /apps/ldaptive && integration/run"
+  openldap:
+    image: osixia/openldap:1.5.0
+    restart: unless-stopped
+    hostname: openldap
+    container_name: openldap
+    ports:
+      - "389:389"
+      - "636:636"
+    volumes:
+      - $PWD/ldif-openldap:/container/service/slapd/assets/config/bootstrap/ldif/custom
+      # - ldap:/var/lib/ldap
+      # - slapd:/etc/ldap/slapd.d
+    environment:
+      - LDAP_DOMAIN=activemq.apache.org
+      - LDAP_BASE_DN=dc=activemq,dc=apache,dc=org
+      - LDAP_ORGANISATION="Apache ActiveMQ Test Org"
+      - LDAP_ROOTPASS=admin     
+      - LDAP_ADMIN_PASSWORD=admin
+    command: "--loglevel info --copy-service"   
+    networks:
+      ldap_net:
+        ipv4_address: 172.28.1.11
+    logging:
+      driver: "none"
+      options:
+        max-size: "100M"
+        max-file: "5"
+  # ldap-account-manager:
+  #   image: ldapaccountmanager/lam:7.4
+  #   restart: unless-stopped
+  #   hostname: ldapaccountmanager
+  #   container_name: ldapaccountmanager    
+  #   links:
+  #     - openldap    
+  #   depends_on:
+  #     - openldap  
+  #   ports:
+  #     - "8080:80"
+  #     - "6443:443"
+  #   # volumes:
+  #   #   - lametc/:/etc/ldap-account-manager
+  #   #   - lamconfig/:/var/lib/ldap-account-manager/config
+  #   #   - lamsession/:/var/lib/ldap-account-manager/sess
+  #   environment:
+  #     - LAM_PASSWORD=admin
+  #     - LAM_LANG=en_US
+  #     - LDAP_SERVER=openldap
+  #     - LDAP_DOMAIN="activemq.apache.org"
+  #     - LDAP_BASE_DN="dc=activemq,dc=apache,dc=org"
+  #     - ADMIN_USER="cn=admin,dc=activemq,dc=apache,dc=org"
+  #     - DEBUG=true
+  #   networks:
+  #     ldap_net:
+  #       ipv4_address: 172.28.1.12      
+networks:
+  ldap_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
