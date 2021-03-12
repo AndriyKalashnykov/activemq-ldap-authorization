@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -x
+
+# DOCKER_LOGIN=
+# DOCKER_PWD=
+DOCKER_REGISTRY=registry-1.docker.io
+
+ACTIVEMQ_VER=5.16.1
+JETTY_VER=9.4.35.v20201120
+LDAPTIVE_VER=1.2.4
+IMAGE_NAME=docker-activemq
+

@@ -6,9 +6,7 @@ LAUNCH_DIR=$(pwd); SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; c
 
 cd $SCRIPT_PARENT_DIR
 
-ACTIVEMQ_VER=5.16.1
-JETTY_VER=9.4.35.v20201120
-LDAPTIVE_VER=1.2.4
+
 
 sudo rm -rf /opt/apache-activemq-$ACTIVEMQ_VER/
 
@@ -30,9 +28,9 @@ curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/ldaptive-$LDAPTIVE_VER.jar https
 
 cd $SCRIPT_PARENT_DIR
 
-cp ./conf/activemq.xml /opt/apache-activemq-5.16.1/conf/
-cp ./conf/jetty.xml /opt/apache-activemq-5.16.1/conf/
-cp ./conf/login.config /opt/apache-activemq-5.16.1/conf/
-cp ./conf/log4j.properties /opt/apache-activemq-5.16.1/conf/
+cp ./$ACTIVEMQ_VER/conf/activemq.xml /opt/apache-activemq-$ACTIVEMQ_VER/conf/
+cp ./$ACTIVEMQ_VER/conf/jetty.xml /opt/apache-activemq-$ACTIVEMQ_VER/conf/
+cp ./$ACTIVEMQ_VER/conf/login.config /opt/apache-activemq-$ACTIVEMQ_VER/conf/
+cp ./$ACTIVEMQ_VER/conf/log4j.properties /opt/apache-activemq-$ACTIVEMQ_VER/conf/
 
 cd $LAUNCH_DIR
