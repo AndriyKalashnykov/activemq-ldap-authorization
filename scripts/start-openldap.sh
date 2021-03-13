@@ -15,7 +15,7 @@ docker run --rm -d --hostname openldap -p 389:389 -p 636:636 -v $(pwd)/ldif-open
 
 # https://github.com/osixia/docker-phpLDAPadmin
 # --env PHPLDAPADMIN_LDAP_HOSTS=127.0.0.1.xip.io 
-docker run --rm -d --hostname phpldapadmin --name phpldapadmin --link openldap -p 8080:80 -p 6443:443 --env PHPLDAPADMIN_LDAP_HOSTS=127.0.0.1.xip.io --detach osixia/phpldapadmin:latest
+docker run --rm -d --hostname phpldapadmin --name phpldapadmin --link openldap -p 8080:80 -p 6443:443 --env PHPLDAPADMIN_LDAP_HOSTS=openldap --detach osixia/phpldapadmin:latest
 PHPLDAP_IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" phpldapadmin)
 echo "Go to: https://$PHPLDAP_IP"
 # echo "Login DN: cn=admin,dc=activemq,dc=apache,dc=org"
