@@ -8,14 +8,16 @@ cd $SCRIPT_PARENT_DIR
 
 # https://activemq.apache.org/cached-ldap-authorization-module
 # https://svn.apache.org/repos/asf/activemq/trunk/activemq-unit-tests/src/test/resources/org/apache/activemq/security/activemq-openldap.ldif
+
 # https://github.com/osixia/docker-openldap
+# https://github.com/osixia/docker-openldap/blob/master/example/docker-compose.yml
 
 # 1
 docker run --rm -d --hostname openldap -p 389:389 -p 636:636 -v $(pwd)/ldif-openldap:/container/service/slapd/assets/config/bootstrap/ldif/custom -e LDAP_DOMAIN=activemq.apache.org -e LDAP_BASE_DN="dc=activemq,dc=apache,dc=org" -e LDAP_ORGANISATION="Apache ActiveMQ Test Org" -e LDAP_ROOTPASS=admin --name openldap osixia/openldap:1.5.0 --copy-service
 
 # https://github.com/osixia/docker-phpLDAPadmin
 # --env PHPLDAPADMIN_LDAP_HOSTS=127.0.0.1.xip.io 
-docker run --rm -d --hostname phpldapadmin --name phpldapadmin --link openldap -p 8080:80 -p 6443:443 --env PHPLDAPADMIN_LDAP_HOSTS=openldap --detach osixia/phpldapadmin:latest
+docker run --rm -d --hostname phpldapadmin --name phpldapadmin --link openldap -p 8080:80 -p 6443:443 --env PHPLDAPADMIN_LDAP_HOSTS=openldap --detach osixia/phpldapadmin:0.9.0
 PHPLDAP_IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" phpldapadmin)
 echo "Go to: https://$PHPLDAP_IP"
 # echo "Login DN: cn=admin,dc=activemq,dc=apache,dc=org"
