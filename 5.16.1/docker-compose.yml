@@ -46,8 +46,8 @@ services:
       - LDAP_HOST=openldap
       - LDAP_PORT=389
       - PERCENT_JVM_HEAP=75
-      - STORE_USAGE="90 gb"
-      - TEMP_USAGE="45 gb"
+      - STORE_USAGE=90 gb
+      - TEMP_USAGE=45 gb
     networks:
       ldap_net:
         ipv4_address: 172.28.1.11     
