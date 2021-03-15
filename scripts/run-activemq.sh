@@ -6,7 +6,7 @@ LAUNCH_DIR=$(pwd); SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; c
 
 . $SCRIPT_DIR/set-env.sh
 
-cd $ACTIVEMQ_VER
+# cd $ACTIVEMQ_VER
 
 OPENLDAP_IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" openldap)
 
@@ -19,8 +19,9 @@ docker run --rm --name activemq -p 1883:1883 -p 5672:5672 -p 8161:8161 -p 61613:
     -e TEMP_USAGE="45 gb" \
     ${DOCKER_LOGIN}/$IMAGE_NAME:$ACTIVEMQ_VER
 
-echo "open http://$OPENLDAP_IP:8161"    
+echo "open http://$OPENLDAP_IP:8161/admin"    
 
+# docker exec -it activemq /bin/bash
 # docker exec -it activemq /opt/amq/bin/activemq producer --messageCount 1 --user admin --password admin
 
 cd $LAUNCH_DIR
