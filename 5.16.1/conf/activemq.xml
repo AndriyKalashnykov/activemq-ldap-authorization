@@ -120,7 +120,7 @@
                 <bean id="lDAPAuthorizationMap" class="org.apache.activemq.security.LDAPAuthorizationMap"
                         xmlns="http://www.springframework.org/schema/beans">
                     <property name="initialContextFactory" value="com.sun.jndi.ldap.LdapCtxFactory"/>
-                    <property name="connectionURL" value="ldap://__LDAP_HOST__:__LDAP_PORT__"/>
+                    <property name="connectionURL" value="ldap://##### LDAP_HOST #####:##### LDAP_PORT #####"/>
                     <property name="authentication" value="simple"/>
                     <property name="connectionUsername" value="cn=admin,dc=activemq,dc=apache,dc=org"/>
                     <property name="connectionPassword" value="admin"/>
@@ -172,13 +172,13 @@
           <systemUsage>
             <systemUsage>
                 <memoryUsage>
-                    <memoryUsage percentOfJvmHeap="__PERCENT_JVM_HEAP__" />
+                    <memoryUsage percentOfJvmHeap="##### PERCENT_JVM_HEAP #####" />
                 </memoryUsage>
                 <storeUsage>
-                    <storeUsage limit="__STORE_USAGE__"/>
+                    <storeUsage limit="##### STORE_USAGE #####"/>
                 </storeUsage>
                 <tempUsage>
-                    <tempUsage limit="__TEMP_USAGE__"/>
+                    <tempUsage limit="##### STEMP_USAGE #####"/>
                 </tempUsage>
             </systemUsage>
         </systemUsage>

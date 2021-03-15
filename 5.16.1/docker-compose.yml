@@ -10,7 +10,7 @@ services:
       - "389:389"
       - "636:636"
     volumes:
-      - $PWD/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
+      - /home/andriy/projects/activemq-ldap-authorization/openldap/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
     environment:
       - LDAP_DOMAIN=activemq.apache.org
       - LDAP_BASE_DN=${LDAP_BASE_DN}
