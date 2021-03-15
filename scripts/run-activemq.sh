@@ -20,4 +20,6 @@ docker run --rm --name activemq -p 1883:1883 -p 5672:5672 -p 8161:8161 -p 61613:
 
 echo "open http://$OPENLDAP_IP:8161"    
 
+# docker exec -it activemq /opt/amq/bin/activemq producer --messageCount 1 --user admin --password admin
+
 cd $LAUNCH_DIR
