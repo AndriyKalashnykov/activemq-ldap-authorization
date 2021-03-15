@@ -18,7 +18,9 @@ docker run --rm --name activemq -p 1883:1883 -p 5672:5672 -p 8161:8161 -p 61613:
     -e TEMP_USAGE="45 gb" \
     ${DOCKER_LOGIN}/$IMAGE_NAME:$ACTIVEMQ_VER
 
-echo "open http://$OPENLDAP_IP:8161/admin"    
+ACTIVEMQ_IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" activemq)
+
+echo "open http://$ACTIVEMQ_IP:8161/admin"    
 
 # docker exec -it activemq /bin/bash
 # docker exec -it activemq /opt/amq/bin/activemq producer --messageCount 1 --user admin --password admin
