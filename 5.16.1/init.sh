@@ -6,13 +6,13 @@ ACTIVEMQ_CONF_FILE=$ACTIVEMQ_BASE/conf/activemq.xml
 LOGIN_CONF_FILE=$ACTIVEMQ_BASE/conf/login.config
 
 if [ ! -z "$LDAP_HOST" ];then
-     sed -i "s#__LDAP_HOST__#"$LDAP_HOST" />#" $ACTIVEMQ_CONF_FILE
-     sed -i "s#__LDAP_HOST__#"$LDAP_HOST" />#" $LOGIN_CONF_FILE
+     sed -i "s#__LDAP_HOST__#"$LDAP_HOST"#" $ACTIVEMQ_CONF_FILE
+     sed -i "s#__LDAP_HOST__#"$LDAP_HOST"#" $LOGIN_CONF_FILE
 fi
 
 if [ ! -z "$LDAP_PORT" ];then
-     sed -i "s#__LDAP_PORT__#"$LDAP_PORT" />#" $ACTIVEMQ_CONF_FILE
-    sed -i "s#__LDAP_PORT__#"$LDAP_PORT" />#" $LOGIN_CONF_FILE
+     sed -i "s#__LDAP_PORT__#"$LDAP_PORT"#" $ACTIVEMQ_CONF_FILE
+    sed -i "s#__LDAP_PORT__#"$LDAP_PORT"#" $LOGIN_CONF_FILE
 fi
 
 if [ ! -z "$PERCENT_JVM_HEAP" ];then
