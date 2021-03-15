@@ -27,7 +27,11 @@ if [ ! -z "$TEMP_USAGE" ];then
     sed -i "s#<tempUsage limit=.*#<tempUsage limit="$TEMP_USAGE" />#" $ACTIVEMQ_CONF_FILE
 fi
 
-cat $ACTIVEMQ_CONF_FILE | grep ldap:
-cat $LOGIN_CONF_FILE | grep ldap:
+echo "###################################### activemq.xml ######################################"
+cat $LOGIN_CONF_FILE
+
+echo "###################################### login.config ######################################"
+cat $ACTIVEMQ_CONF_FILE
+
 
 $ACTIVEMQ_BASE/bin/activemq start && tail -f /opt/activemq/data/activemq.log
