@@ -11,20 +11,20 @@ if [ ! -z "$LDAP_HOST" ];then
 fi
 
 if [ ! -z "$LDAP_PORT" ];then
-     sed -i "s#__LDAP_PORT__#"$LDAP_PORT"#" $ACTIVEMQ_CONF_FILE
+    sed -i "s#__LDAP_PORT__#"$LDAP_PORT"#" $ACTIVEMQ_CONF_FILE
     sed -i "s#__LDAP_PORT__#"$LDAP_PORT"#" $LOGIN_CONF_FILE
 fi
 
 if [ ! -z "$PERCENT_JVM_HEAP" ];then
-    sed -i "s#<memoryUsage percentOfJvmHeap=.*#<memoryUsage percentOfJvmHeap="$PERCENT_JVM_HEAP" />#" $ACTIVEMQ_CONF_FILE
+    sed -i "s#__PERCENT_JVM_HEAP__#"$PERCENT_JVM_HEAP"#" $ACTIVEMQ_CONF_FILE
 fi
 
 if [ ! -z "$STORE_USAGE" ];then
-    sed -i "s#<storeUsage limit=.*#<storeUsage limit="$STORE_USAGE" />#" $ACTIVEMQ_CONF_FILE
+    sed -i "s#__STORE_USAGE__#"$STORE_USAGE"#" $ACTIVEMQ_CONF_FILE
 fi
 
 if [ ! -z "$TEMP_USAGE" ];then
-    sed -i "s#<tempUsage limit=.*#<tempUsage limit="$TEMP_USAGE" />#" $ACTIVEMQ_CONF_FILE
+    sed -i "s#__TEMP_USAGE__#"$TEMP_USAGE"#" $ACTIVEMQ_CONF_FILE
 fi
 
 echo "###################################### activemq.xml ######################################"
