@@ -1,0 +1,57 @@
+version: "3.8"
+
+services:
+  openldap:
+    image: osixia/openldap:1.5.0
+    restart: unless-stopped
+    hostname: openldap
+    container_name: openldap
+    ports:
+      - "389:389"
+      - "636:636"
+    volumes:
+      - $PWD/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
+    environment:
+      - LDAP_DOMAIN=activemq.apache.org
+      - LDAP_BASE_DN=${LDAP_BASE_DN}
+      - LDAP_ORGANISATION="Apache ActiveMQ Test Org"
+      - LDAP_ROOTPASS=admin     
+      - LDAP_ADMIN_PASSWORD=admin
+    command: "--loglevel info --copy-service"   
+    networks:
+      ldap_net:
+        ipv4_address: 172.28.1.10
+    logging:
+      driver: "none"
+      options:
+        max-size: "100M"
+        max-file: "5"
+  activemq:
+    image: andriykalashnykov/docker-activemq:5.16.1
+    restart: unless-stopped
+    hostname: activemq
+    container_name: activemq    
+    links:
+      - openldap    
+    depends_on:
+      - openldap  
+    ports:
+      - "1883:1883"
+      - "5672:5672"
+      - "8161:8161"
+      - "61613:61613"
+      - "61614:61614"
+      - "61616:61616"
+    environment:
+      - PERCENT_JVM_HEAP=75
+      - STORE_USAGE="90 gb"
+      - TEMP_USAGE="45 gb"
+    networks:
+      ldap_net:
+        ipv4_address: 172.28.1.11     
+networks:
+  ldap_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16

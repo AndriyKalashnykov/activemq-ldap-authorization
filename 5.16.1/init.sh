@@ -24,14 +24,4 @@ if [ ! -z "$TEMP_USAGE" ];then
     sed -i "s#<tempUsage limit=.*#<tempUsage limit="$TEMP_USAGE" />#" $CONF_FILE
 fi
 
-set -x
-
-# lsof -i:389
-# netstat -anp tcp | grep LISTEN | grep 389
-# nmap -sT -O localhost | grep 389
-
-# cat /opt/apache-activemq-5.16.1/conf/login.config
-# cat /opt/apache-activemq-5.16.1/conf/activemq.xml
-# cat /opt/apache-activemq-5.16.1/conf/jetty.xml
-
-$ACTIVEMQ_BASE/bin/activemq start && tail -f /opt/apache-activemq-5.16.1/data/activemq.log
+$ACTIVEMQ_BASE/bin/activemq start && tail -f /opt/apache-activemq-$ACTIVEMQ_BASE/data/activemq.log

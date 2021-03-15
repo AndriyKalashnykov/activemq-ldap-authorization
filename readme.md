@@ -54,6 +54,11 @@ docker exec openldap ldapsearch -x -H ldap://localhost:389 -b ou=Group,ou=Active
 604a5395 conn=1017 fd=12 closed
 
 ./activemq producer --user admin --password adimn --destination TEST --message hello --messageCount 10
+
+
+# lsof -i:389
+# netstat -anp tcp | grep LISTEN | grep 389
+# nmap -sT -O localhost | grep 389
 ```
 
 ### Clone and build custom jetty
