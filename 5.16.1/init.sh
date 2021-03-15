@@ -27,4 +27,7 @@ if [ ! -z "$TEMP_USAGE" ];then
     sed -i "s#<tempUsage limit=.*#<tempUsage limit="$TEMP_USAGE" />#" $ACTIVEMQ_CONF_FILE
 fi
 
+cat $ACTIVEMQ_CONF_FILE | grep ldap:
+cat $LOGIN_CONF_FILE | grep ldap:
+
 $ACTIVEMQ_BASE/bin/activemq start && tail -f /opt/apache-activemq-$ACTIVEMQ_BASE/data/activemq.log

@@ -43,6 +43,8 @@ services:
       - "61614:61614"
       - "61616:61616"
     environment:
+      - LDAP_HOST=openldap
+      - LDAP_PORT=389
       - PERCENT_JVM_HEAP=75
       - STORE_USAGE="90 gb"
       - TEMP_USAGE="45 gb"
