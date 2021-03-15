@@ -120,7 +120,7 @@
                 <bean id="lDAPAuthorizationMap" class="org.apache.activemq.security.LDAPAuthorizationMap"
                         xmlns="http://www.springframework.org/schema/beans">
                     <property name="initialContextFactory" value="com.sun.jndi.ldap.LdapCtxFactory"/>
-                    <property name="connectionURL" value="ldap://localhost:389"/>
+                    <property name="connectionURL" value="ldap://__LDAP_HOST__:__LDAP_PORT__"/>
                     <property name="authentication" value="simple"/>
                     <property name="connectionUsername" value="cn=admin,dc=activemq,dc=apache,dc=org"/>
                     <property name="connectionPassword" value="admin"/>
