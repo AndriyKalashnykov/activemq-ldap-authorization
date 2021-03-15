@@ -30,4 +30,4 @@ fi
 cat $ACTIVEMQ_CONF_FILE | grep ldap:
 cat $LOGIN_CONF_FILE | grep ldap:
 
-$ACTIVEMQ_BASE/bin/activemq start && tail -f /opt/apache-activemq-$ACTIVEMQ_BASE/data/activemq.log
+$ACTIVEMQ_BASE/bin/activemq start && tail -f /opt/activemq/data/activemq.log
