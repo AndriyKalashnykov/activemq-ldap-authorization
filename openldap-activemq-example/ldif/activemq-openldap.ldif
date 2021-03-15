@@ -28,7 +28,7 @@ version: 1
  objectClass: organizationalRole 
  objectClass: top 
  objectClass: simpleSecurityObject 
- userPassword: {SHA}0DPiKuNIrrVmD8IUCuw1hQxNqZc=
+ userPassword:{SHA}0DPiKuNIrrVmD8IUCuw1hQxNqZc=
  description: Bind user for MQ broker 
     
  dn: ou=systems,dc=acme,dc=com 
