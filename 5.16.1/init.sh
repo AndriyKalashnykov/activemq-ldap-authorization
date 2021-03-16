@@ -4,6 +4,9 @@ ACTIVEMQ_BASE=/opt/apache-activemq-5.16.1
 JETTY_REALM_FILE=$ACTIVEMQ_BASE/conf/jetty-realm.properties
 ACTIVEMQ_CONF_FILE=$ACTIVEMQ_BASE/conf/activemq.xml
 LOGIN_CONF_FILE=$ACTIVEMQ_BASE/conf/login.config
+ACTIVEMQ_ENV=$ACTIVEMQ_BASE/bin/env
+
+[[ $DEBUG == true ]] && set -x
 
 sed -i "s|##### STORE_USAGE #####|${storeUsage}|" "$CONFIG_FILE"
 
@@ -28,6 +31,8 @@ fi
 if [ ! -z "$TEMP_USAGE" ];then
     sed -i "s|##### STEMP_USAGE #####|${TEMP_USAGE}|" $ACTIVEMQ_CONF_FILE
 fi
+
+[[ -n ${ACTIVEMQ_OPTS_MEMORY} ]] && sed -ri "s/^(ACTIVEMQ_OPTS_MEMORY=).*/\1\"${ACTIVEMQ_OPTS_MEMORY}\"/" ${ACTIVEMQ_ENV}
 
 echo "###################################### activemq.xml ######################################"
 cat $LOGIN_CONF_FILE

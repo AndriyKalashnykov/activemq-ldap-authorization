@@ -50,9 +50,11 @@ services:
     environment:
       - LDAP_HOST=openldap
       - LDAP_PORT=389
+      - ACTIVEMQ_OPTS_MEMORY=-Xms512M -Xmx2G
       - PERCENT_JVM_HEAP=75
       - STORE_USAGE=${ACTIVEMQ_STORE_USAGE}
-      - TEMP_USAGE=${ACTIVEMQ_TEST_USAGE}
+      - TEMP_USAGE=${ACTIVEMQ_TEMP_USAGE}
+      - DEBUG=true
     networks:
       ldap_net:
         ipv4_address: 172.28.1.11
