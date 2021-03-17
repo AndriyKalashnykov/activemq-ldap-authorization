@@ -1,0 +1,71 @@
+depth=1 C = US, ST = New Mexico, L = Albuquerque, O = A1A Car Wash, OU = Information Technology Dep., CN = docker-light-baseimage
+verify error:num=19:self signed certificate in certificate chain
+verify return:0
+CONNECTED(00000006)
+---
+Certificate chain
+ 0 s:/C=US/ST=New Mexico/L=Albuquerque/O=A1A Car Wash/OU=Information Technology Dep./CN=openldap
+   i:/C=US/ST=New Mexico/L=Albuquerque/O=A1A Car Wash/OU=Information Technology Dep./CN=docker-light-baseimage
+-----BEGIN CERTIFICATE-----
+MIIC9TCCAnugAwIBAgIUUsBOddZ6MD596V6VRDnfCm1d0UUwCgYIKoZIzj0EAwMw
+gZYxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpOZXcgTWV4aWNvMRQwEgYDVQQHEwtB
+bGJ1cXVlcnF1ZTEVMBMGA1UEChMMQTFBIENhciBXYXNoMSQwIgYDVQQLExtJbmZv
+cm1hdGlvbiBUZWNobm9sb2d5IERlcC4xHzAdBgNVBAMTFmRvY2tlci1saWdodC1i
+YXNlaW1hZ2UwHhcNMjEwMzE3MjExNzAwWhcNMjIwMzE3MjExNzAwWjCBiDELMAkG
+A1UEBhMCVVMxEzARBgNVBAgTCk5ldyBNZXhpY28xFDASBgNVBAcTC0FsYnVxdWVy
+cXVlMRUwEwYDVQQKEwxBMUEgQ2FyIFdhc2gxJDAiBgNVBAsTG0luZm9ybWF0aW9u
+IFRlY2hub2xvZ3kgRGVwLjERMA8GA1UEAxMIb3BlbmxkYXAwdjAQBgcqhkjOPQIB
+BgUrgQQAIgNiAASu3SspaplL+xJSaPU1f943Z0lY/XGgVSmt394Sc3vYbjnAIiA+
+IyWO3qUGwwleV2qnNxLwYCfpJNaiaGoIEaKLQ4Zdr4c03oMjD+YCYp4IFFEE3vjC
+xoSPSPFRTvOH1wujgZUwgZIwDgYDVR0PAQH/BAQDAgWgMB0GA1UdJQQWMBQGCCsG
+AQUFBwMBBggrBgEFBQcDAjAMBgNVHRMBAf8EAjAAMB0GA1UdDgQWBBTxfyef8T/a
+D0NiXJfYxNvMLO9ooDAfBgNVHSMEGDAWgBTXEnhkPtbt57K9gXGGNo1XnMgUJTAT
+BgNVHREEDDAKgghvcGVubGRhcDAKBggqhkjOPQQDAwNoADBlAjACvt6sicaLV7ag
+zXt1gF2bLneyoEhy4ccGfR7F6y2Ttw2GsnOWKM1zrQdlUsf/9esCMQCbZMYZi6FX
+niEZcjq4+XQcINq3LSvYuOA3px5tXcZ8V3Zwg3wmYQwagnqKyX4JCZw=
+-----END CERTIFICATE-----
+ 1 s:/C=US/ST=New Mexico/L=Albuquerque/O=A1A Car Wash/OU=Information Technology Dep./CN=docker-light-baseimage
+   i:/C=US/ST=New Mexico/L=Albuquerque/O=A1A Car Wash/OU=Information Technology Dep./CN=docker-light-baseimage
+-----BEGIN CERTIFICATE-----
+MIICrjCCAjWgAwIBAgIUcun3KuyYiVryQCfOcWz7gNP0x/AwCgYIKoZIzj0EAwMw
+gZYxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpOZXcgTWV4aWNvMRQwEgYDVQQHEwtB
+bGJ1cXVlcnF1ZTEVMBMGA1UEChMMQTFBIENhciBXYXNoMSQwIgYDVQQLExtJbmZv
+cm1hdGlvbiBUZWNobm9sb2d5IERlcC4xHzAdBgNVBAMTFmRvY2tlci1saWdodC1i
+YXNlaW1hZ2UwHhcNMjEwMTE2MTE0MjAwWhcNMjYwMTE1MTE0MjAwWjCBljELMAkG
+A1UEBhMCVVMxEzARBgNVBAgTCk5ldyBNZXhpY28xFDASBgNVBAcTC0FsYnVxdWVy
+cXVlMRUwEwYDVQQKEwxBMUEgQ2FyIFdhc2gxJDAiBgNVBAsTG0luZm9ybWF0aW9u
+IFRlY2hub2xvZ3kgRGVwLjEfMB0GA1UEAxMWZG9ja2VyLWxpZ2h0LWJhc2VpbWFn
+ZTB2MBAGByqGSM49AgEGBSuBBAAiA2IABNa9OyYrVwTPLjvXW2/mhFFMmQAZSFiy
+go9hXqnwz/NDy0ZuQKsUFzSed6UXNu1eQgMHTSuwWi2TdbgSX8paz+w2QGzm2QWh
+QFkcA96pzTUzjQanDvuqgVUhTWsmI04U2aNCMEAwDgYDVR0PAQH/BAQDAgEGMA8G
+A1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFNcSeGQ+1u3nsr2BcYY2jVecyBQlMAoG
+CCqGSM49BAMDA2cAMGQCMBHppmoY8E2fv0PIg8lR3Xq4bKNTH7cG3WEbR10NHPeJ
+NHtBrXWsnjAouXKFGS+1vgIwAVP1gZCPOTvChfTF8uOHW7RZ3UnC3xcJlGaOrC7s
+uElSBnLT7DIT3uBSxmIegHNH
+-----END CERTIFICATE-----
+---
+Server certificate
+subject=/C=US/ST=New Mexico/L=Albuquerque/O=A1A Car Wash/OU=Information Technology Dep./CN=openldap
+issuer=/C=US/ST=New Mexico/L=Albuquerque/O=A1A Car Wash/OU=Information Technology Dep./CN=docker-light-baseimage
+---
+No client certificate CA names sent
+Server Temp Key: ECDH, X25519, 253 bits
+---
+SSL handshake has read 1774 bytes and written 289 bytes
+---
+New, TLSv1/SSLv3, Cipher is ECDHE-ECDSA-AES256-GCM-SHA384
+Server public key is 384 bit
+Secure Renegotiation IS supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+SSL-Session:
+    Protocol  : TLSv1.2
+    Cipher    : ECDHE-ECDSA-AES256-GCM-SHA384
+    Session-ID: EE94DBE44E1A6372869CEE80482C06BC7B90CCC202F5098B6D049B2D84B80A7B
+    Session-ID-ctx: 
+    Master-Key: F508DD2E926D13B426F1370AD5DB17067D74D294EAFE9F7EF24E1E45132BD0AA68DC2D1B08849CCE6E8A4E1CD6703438
+    Start Time: 1616016453
+    Timeout   : 7200 (sec)
+    Verify return code: 19 (self signed certificate in certificate chain)
+---

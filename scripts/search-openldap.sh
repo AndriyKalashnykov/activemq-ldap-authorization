@@ -20,7 +20,7 @@ docker exec openldap ldapsearch -x -H ldap://localhost:389 -b cn=ActiveMQ.Adviso
 # sudo sh -c "echo 'TLS_REQCERT never' >> /etc/ldap/ldap.conf"
 # or not so much LDAPTLS_REQCERT=never 
 LDAPTLS_REQCERT=never ldapsearch -x -H ldaps://localhost:636 -b ou=User,ou=ActiveMQ,dc=activemq,dc=apache,dc=org -D "cn=admin,dc=activemq,dc=apache,dc=org" -w admin
-openssl s_client -connect localhost:636 -showcerts
+yes | openssl s_client -connect localhost:636 -showcerts
 
 # 2
 # docker exec openldap slappasswd -h {SHA} -s password
