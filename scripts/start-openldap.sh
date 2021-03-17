@@ -13,7 +13,7 @@ cd $SCRIPT_PARENT_DIR
 # https://github.com/osixia/docker-openldap/blob/master/example/docker-compose.yml
 
 # 1
-docker run -d --rm --hostname openldap -p 389:389 -p 636:636 -v "$(pwd)/openldap/ldif":/container/service/slapd/assets/config/bootstrap/ldif/custom -e LDAP_DOMAIN=activemq.apache.org -e LDAP_BASE_DN="dc=activemq,dc=apache,dc=org" -e LDAP_ORGANISATION="Apache ActiveMQ Test Org" -e LDAP_ROOTPASS=admin --name openldap osixia/openldap:1.5.0 --copy-service
+docker run -d --rm --hostname openldap -p 389:389 -p 636:636 -v "$(pwd)/openldap/ldif":/container/service/slapd/assets/config/bootstrap/ldif/custom -e LDAP_DOMAIN=activemq.apache.org -e LDAP_BASE_DN="dc=activemq,dc=apache,dc=org" -e LDAP_ORGANISATION="Apache ActiveMQ Test Org" -e LDAP_ROOTPASS=admin -e LDAP_TLS_VERIFY_CLIENT=tr --name openldap osixia/openldap:1.5.0 --copy-service
 OPENLDAP_IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" openldap)
 echo "OPENLDAP_IP: https://$OPENLDAP_IP:389"
 

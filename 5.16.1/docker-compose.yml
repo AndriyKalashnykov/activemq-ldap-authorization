@@ -13,13 +13,17 @@ services:
       - 389
       - 636      
     volumes:
-      - ~/projects/activemq-ldap-authorization/openldap/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
+      - ../openldap/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
+      - /var/lib/ldap
+      - /etc/ldap/slapd.d
+      - /container/service/slapd/assets/certs/
     environment:
       - LDAP_DOMAIN=activemq.apache.org
       - LDAP_BASE_DN=${LDAP_BASE_DN}
       - LDAP_ORGANISATION="Apache ActiveMQ Test Org"
       - LDAP_ROOTPASS=admin     
       - LDAP_ADMIN_PASSWORD=admin
+      - LDAP_TLS_VERIFY_CLIENT="never"      
     command: "--loglevel info --copy-service"   
     networks:
       ldap_net:
