@@ -6,9 +6,15 @@ LAUNCH_DIR=$(pwd); SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; c
 
 . $SCRIPT_DIR/set-env.sh
 
-# cd $ACTIVEMQ_VER
-
-OPENLDAP_IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" openldap)
+CONTAINER=openldap
+OPENLDAP_IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $CONTAINER)
+if [ -z $OPENLDAP_IP ]; then
+    OPENLDAP_IP=$(docker ps -q | xargs -n 1 docker inspect --format '{{ .Name }} {{range .NetworkSettings.Networks}} {{.IPAddress}}{{end}}' | sed 's#^/##' | grep $CONTAINER | awk '{print $2}')
+else  
+    echo ""
+fi
+    
+echo $OPENLDAP_IP
 
 docker run --rm --name activemq -p 1883:1883 -p 5672:5672 -p 8161:8161 -p 61613:61613 -p 61614:61614 -p 61616:61616 \
     -e LDAP_HOST=$OPENLDAP_IP \
