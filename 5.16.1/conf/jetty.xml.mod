@@ -20,20 +20,34 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="securityLoginService" class="org.eclipse.jetty.security.HashLoginService">
+    <!-- <bean id="securityLoginService" class="org.eclipse.jetty.security.HashLoginService">
         <property name="name" value="ActiveMQRealm" />
         <property name="config" value="${activemq.conf}/jetty-realm.properties" />
     </bean>
+     -->
+    <bean id="defaultIdentityService" class="org.eclipse.jetty.security.DefaultIdentityService" />
+
+    <bean id="securityLoginService" class="org.eclipse.jetty.jaas.JAASLoginService">
+        <property name="name" value="LdapRealm" />
+
+        <property name="LoginModuleName" value="LDAPLogin"/>
+        <!-- <property name="CallbackHandlerClass" value="org.eclipse.jetty.jaas.callback.DefaultCallbackHandler" /> -->
+        <property name="roleClassNames" value="org.eclipse.jetty.jaas.JAASRole" />
+
+        <!-- <property name="LoginModuleName" value="ldaptive-activemq-ldap"/>
+        <property name="roleClassNames" value="org.ldaptive.jaas.LdapRole" /> -->
+        <property name="identityService" ref="defaultIdentityService" /> 
+    </bean>    
 
     <bean id="securityConstraint" class="org.eclipse.jetty.util.security.Constraint">
         <property name="name" value="BASIC" />
-        <property name="roles" value="user,admin" />
+        <property name="roles" value="users,admins,admin" />
         <!-- set authenticate=false to disable login -->
         <property name="authenticate" value="true" />
     </bean>
     <bean id="adminSecurityConstraint" class="org.eclipse.jetty.util.security.Constraint">
         <property name="name" value="BASIC" />
-        <property name="roles" value="admin" />
+        <property name="roles" value="users,admins,admin" />
          <!-- set authenticate=false to disable login -->
         <property name="authenticate" value="true" />
     </bean>
@@ -99,6 +113,7 @@
 	</bean>    
     <bean id="securityHandler" class="org.eclipse.jetty.security.ConstraintSecurityHandler">
         <property name="loginService" ref="securityLoginService" />
+        <!-- <property name="identityService" ref="defaultIdentityService" /> -->
         <property name="authenticator">
             <bean class="org.eclipse.jetty.security.authentication.BasicAuthenticator" />
         </property>
@@ -144,6 +159,7 @@
            	<bean id="Connector" class="org.eclipse.jetty.server.ServerConnector">
            		<constructor-arg ref="Server" />
                     <!-- see the jettyPort bean -->
+                   <!-- <property name="host" value="#{systemProperties['jetty.host']}" /> -->
                    <property name="host" value="0.0.0.0" />
                    <property name="port" value="#{systemProperties['jetty.port']}" />
                </bean>

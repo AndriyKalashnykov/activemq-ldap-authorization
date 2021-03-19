@@ -27,10 +27,10 @@ curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/ldaptive-$LDAPTIVE_VER.jar https
 
 cd $SCRIPT_PARENT_DIR
 
-cp ./$ACTIVEMQ_VER/conf/activemq.xml /opt/apache-activemq-$ACTIVEMQ_VER/conf/
-cp ./$ACTIVEMQ_VER/conf/jetty.xml /opt/apache-activemq-$ACTIVEMQ_VER/conf/
-cp ./$ACTIVEMQ_VER/conf/login.config /opt/apache-activemq-$ACTIVEMQ_VER/conf/
-cp ./$ACTIVEMQ_VER/conf/log4j.properties /opt/apache-activemq-$ACTIVEMQ_VER/conf/
-cp ./$ACTIVEMQ_VER/bin/env /opt/apache-activemq-$ACTIVEMQ_VER/bin/
+# cp ./$ACTIVEMQ_VER/conf/activemq.xml /opt/apache-activemq-$ACTIVEMQ_VER/conf/
+# cp ./$ACTIVEMQ_VER/conf/jetty.xml /opt/apache-activemq-$ACTIVEMQ_VER/conf/
+# cp ./$ACTIVEMQ_VER/conf/login.config /opt/apache-activemq-$ACTIVEMQ_VER/conf/
+# cp ./$ACTIVEMQ_VER/conf/log4j.properties /opt/apache-activemq-$ACTIVEMQ_VER/conf/
+# cp ./$ACTIVEMQ_VER/bin/env /opt/apache-activemq-$ACTIVEMQ_VER/bin/
 
 cd $LAUNCH_DIR
