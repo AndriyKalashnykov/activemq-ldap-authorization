@@ -102,30 +102,25 @@
             <map>
                 <!-- <authorizationMap>
                     <authorizationEntries>
-                        <authorizationEntry queue=">" write="admins" read="admins" admin="admins" />
+                        <authorizationEntry queue=">" read="users" write="users" admin="users"/>
                         <authorizationEntry topic="ActiveMQ.Advisory.>" read="*" write="*" admin="*"/>
-                        <authorizationEntry queue="TEST" read="admins, users" write="admins, users" admin="admins, users"/>
                     </authorizationEntries>
-                    <tempDestinationAuthorizationEntry>
-                         <tempDestinationAuthorizationEntry read="admins" write="admins" admin="admins"/>
-                    </tempDestinationAuthorizationEntry>
                 </authorizationMap> -->
 
-                <cachedLDAPAuthorizationMap
-                    connectionURL="ldap://##### LDAP_HOST #####:##### LDAP_PORT #####"
-                    connectionUsername="cn=admin,dc=activemq,dc=apache,dc=org"
+                <!-- <cachedLDAPAuthorizationMap
+                    connectionURL="ldap://localhost:389"
+                    connectionUsername="uid=admin,ou=User,ou=ActiveMQ,dc=activemq,dc=apache,dc=org"
                     connectionPassword="admin"
                     queueSearchBase="ou=Queue,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org"
                     topicSearchBase="ou=Topic,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org"
                     tempSearchBase="ou=Temp,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org"
                     refreshInterval="300000"
-                    legacyGroupMapping="false"/>
+                    legacyGroupMapping="false"/> -->
 
-
-                <!-- <bean id="lDAPAuthorizationMap" class="org.apache.activemq.security.LDAPAuthorizationMap"
+                <bean id="lDAPAuthorizationMap" class="org.apache.activemq.security.LDAPAuthorizationMap"
                         xmlns="http://www.springframework.org/schema/beans">
                     <property name="initialContextFactory" value="com.sun.jndi.ldap.LdapCtxFactory"/>
-                    <property name="connectionURL" value="ldap://##### LDAP_HOST #####:##### LDAP_PORT #####"/>
+                    <property name="connectionURL" value="ldap://localhost:389"/>
                     <property name="authentication" value="simple"/>
                     <property name="connectionUsername" value="cn=admin,dc=activemq,dc=apache,dc=org"/>
                     <property name="connectionPassword" value="admin"/>
@@ -134,17 +129,36 @@
                     <property name="topicSearchSubtreeBool" value="true"/>
                     <property name="queueSearchMatchingFormat" value="cn={0},ou=Queue,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org"/>
                     <property name="queueSearchSubtreeBool" value="true"/>
-                    <property name="advisorySearchBase" value="cn=ActiveMQ.Advisory,ou=Topic,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org"/>
-                    <property name="tempSearchBase" value="cn=ActiveMQ.Temp,ou=Temp,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org"/>
+                    <property name="advisorySearchBase" value="cn=ActiveMQ.Advisory.$,ou=Topic,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org"/>
+                    <property name="tempSearchBase" value="ou=Temp,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org"/>
                     <property name="adminBase" value="(cn=admin)"/>
                     <property name="adminAttribute" value="member"/>
                     <property name="readBase" value="(cn=read)"/>
                     <property name="readAttribute" value="member"/>
                     <property name="writeBase" value="(cn=write)"/>
                     <property name="writeAttribute" value="member"/>
-                </bean> -->
+                </bean>
 
-
+                <!-- <bean xmlns="http://www.springframework.org/schema/beans" id="lDAPAuthorizationMap-activemq-example" class="org.apache.activemq.security.LDAPAuthorizationMap"> 
+                    <property name="initialContextFactory" value="com.sun.jndi.ldap.LdapCtxFactory"/> 
+                    <property name="connectionURL" value="ldap://localhost:389"/> 
+                    <property name="authentication" value="simple"/> 
+                    <property name="connectionUsername" value="cn=mqbroker,ou=Services,dc=acme,dc=com"/> 
+                    <property name="connectionPassword" value="password"/> 
+                    <property name="connectionProtocol" value=""/> 
+                    <property name="topicSearchMatchingFormat" value="cn={0},ou=Topic,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com"/> 
+                    <property name="topicSearchSubtreeBool" value="true"/> 
+                    <property name="queueSearchMatchingFormat" value="cn={0},ou=Queue,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com"/> 
+                    <property name="queueSearchSubtreeBool" value="true"/> 
+                    <property name="advisorySearchBase" value="cn=ActiveMQ.Advisory.$,ou=Topic,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com"/>
+                    <property name="tempSearchBase" value="ou=Temp,ou=Destination,ou=ActiveMQ,ou=systems,dc=acme,dc=com"/>
+                    <property name="adminBase" value="(cn=admin)"/> 
+                    <property name="adminAttribute" value="member"/> 
+                    <property name="readBase" value="(cn=read)"/> 
+                    <property name="readAttribute" value="member"/> 
+                    <property name="writeBase" value="(cn=write)"/> 
+                    <property name="writeAttribute" value="member"/> 
+                  </bean> -->
             </map>
         </authorizationPlugin>
 	  
@@ -158,13 +172,13 @@
           <systemUsage>
             <systemUsage>
                 <memoryUsage>
-                    <memoryUsage percentOfJvmHeap="##### PERCENT_JVM_HEAP #####" />
+                    <memoryUsage percentOfJvmHeap="70" />
                 </memoryUsage>
                 <storeUsage>
-                    <storeUsage limit="##### STORE_USAGE #####"/>
+                    <storeUsage limit="100 gb"/>
                 </storeUsage>
                 <tempUsage>
-                    <tempUsage limit="##### STEMP_USAGE #####"/>
+                    <tempUsage limit="50 gb"/>
                 </tempUsage>
             </systemUsage>
         </systemUsage>

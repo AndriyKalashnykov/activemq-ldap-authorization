@@ -66,7 +66,28 @@ services:
       driver: "json-file"
       options:
         max-size: "10M"
-        max-file: "5"          
+        max-file: "5"
+  phpldapadmin:
+    image: osixia/phpldapadmin:0.9.0
+    hostname: phpldapadmin
+    container_name: phpldapadmin
+    links:
+      - openldap    
+    depends_on:
+      - openldap
+    ports:
+      - "8180:80"
+      - "6543:443"
+    environment:
+      - PHPLDAPADMIN_LDAP_HOSTS=openldap
+    networks:
+      ldap_net:
+        ipv4_address: 172.28.1.12  
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10M"
+        max-file: "5"                             
 networks:
   ldap_net:
     ipam:
