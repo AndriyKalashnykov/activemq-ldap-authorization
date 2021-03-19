@@ -29,6 +29,9 @@ ACTIVEMQ_IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" activemq)
 echo "open http://$ACTIVEMQ_IP:8161/admin"    
 
 # docker exec -it activemq /bin/bash
-# docker exec -it activemq /opt/amq/bin/activemq producer --messageCount 1 --user admin --password admin
+# docker exec -it activemq /opt/apache-activemq-5.16.1/bin/activemq producer --messageCount 1 --user admin --password admin
+docker exec -it activemq /opt/apache-activemq-5.16.1/bin/activemq producer --user admin --password admin --destination TEST --message hello --messageCount 1
+docker exec -it activemq /opt/apache-activemq-5.16.1/bin/activemq producer --user user --password admin --destination USERS.TEST --message hello --messageCount 1
+docker exec openldap ldapsearch -x -H ldap://localhost:389 -b "cn=ActiveMQ.Advisory,ou=Topic,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org" -s sub "(cn=admin)" -D "cn=admin,dc=activemq,dc=apache,dc=org" -w admin
 
 cd $LAUNCH_DIR

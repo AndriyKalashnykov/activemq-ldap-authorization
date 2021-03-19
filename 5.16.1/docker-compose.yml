@@ -29,9 +29,9 @@ services:
       ldap_net:
         ipv4_address: 172.28.1.10
     logging:
-      driver: "none"
+      driver: "json-file"
       options:
-        max-size: "100M"
+        max-size: "10M"
         max-file: "5"
   activemq:
     image: andriykalashnykov/docker-activemq:5.16.1
@@ -63,9 +63,9 @@ services:
       ldap_net:
         ipv4_address: 172.28.1.11
     logging:
-      driver: "none"
+      driver: "json-file"
       options:
-        max-size: "100M"
+        max-size: "10M"
         max-file: "5"          
 networks:
   ldap_net:
