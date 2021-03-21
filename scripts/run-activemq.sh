@@ -22,7 +22,7 @@ docker run --rm --name $ACTIVEMQ_CONTAINER -p 1883:1883 -p 5672:5672 -p 8161:816
     -e PERCENT_JVM_HEAP=75 \
     -e STORE_USAGE="90 gb" \
     -e TEMP_USAGE="45 gb" \
-    ${DOCKER_LOGIN}/$IMAGE_NAME:$ACTIVEMQ_VER
+    ${DOCKER_LOGIN}/$ACTIVEMQ_IMAGE_NAME:$ACTIVEMQ_VER
 
 ACTIVEMQ_IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $ACTIVEMQ_CONTAINER)
 

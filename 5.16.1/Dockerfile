@@ -1,5 +1,7 @@
 FROM openjdk:8-jre
 
+LABEL maintainer="AndriyKalashnykov@gmail.com"
+
 ENV ACTIVEMQ_VER 5.16.1
 ENV JETTY_VER=9.4.35.v20201120
 ENV LDAPTIVE_VER=1.2.4
