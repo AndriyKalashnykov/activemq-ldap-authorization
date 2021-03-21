@@ -58,10 +58,11 @@ services:
     depends_on:
       - openldap
     ports:
-      - "8180:80"
       - "6543:443"
+      # - "8180:80"      
     environment:
       - PHPLDAPADMIN_LDAP_HOSTS=openldap
+      # - PHPLDAPADMIN_HTTPS=false
     networks:
       ldap_net:
         ipv4_address: 172.28.1.12           
