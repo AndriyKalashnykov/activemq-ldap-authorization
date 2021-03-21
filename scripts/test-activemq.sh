@@ -7,7 +7,6 @@ LAUNCH_DIR=$(pwd); SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; c
 . $SCRIPT_DIR/set-env.sh
 
 # docker exec -it $ACTIVEMQ_CONTAINER /bin/bash
-# docker exec -it $ACTIVEMQ_CONTAINER /opt/apache-activemq-5.16.1/bin/activemq producer --messageCount 1 --user admin --password admin
 
 # QUEUES
 docker exec -it $ACTIVEMQ_CONTAINER /opt/apache-activemq-5.16.1/bin/activemq producer --user admin --password admin --destination queue://TEST --message hello --messageCount 1
