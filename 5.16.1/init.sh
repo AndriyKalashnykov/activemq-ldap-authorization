@@ -20,6 +20,14 @@ if [ ! -z "$LDAP_PORT" ];then
      sed -i "s|##### LDAP_PORT #####|${LDAP_PORT}|" $LOGIN_CONF_FILE
 fi
 
+if [ ! -z "$LDAP_CONN_USER" ];then
+     sed -i "s|##### LDAP_CONN_USER #####|${LDAP_CONN_USER}|" $ACTIVEMQ_CONF_FILE
+fi
+
+if [ ! -z "$LDAP_CONN_USER_PWD" ];then
+     sed -i "s|##### LDAP_CONN_USER_PWD #####|${LDAP_CONN_USER_PWD}|" $ACTIVEMQ_CONF_FILE
+fi
+
 if [ ! -z "$PERCENT_JVM_HEAP" ];then
     sed -i "s|##### PERCENT_JVM_HEAP #####|${PERCENT_JVM_HEAP}|" $ACTIVEMQ_CONF_FILE
 fi

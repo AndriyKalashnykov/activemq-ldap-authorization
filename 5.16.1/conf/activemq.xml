@@ -102,8 +102,8 @@
             <map>
                 <cachedLDAPAuthorizationMap
                     connectionURL="ldap://##### LDAP_HOST #####:##### LDAP_PORT #####"
-                    connectionUsername="cn=admin,dc=activemq,dc=apache,dc=org"
-                    connectionPassword="admin"
+                    connectionUsername="##### LDAP_CONN_USER #####"
+                    connectionPassword="##### LDAP_CONN_USER_PWD #####"
                     queueSearchBase="ou=Queue,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org"
                     topicSearchBase="ou=Topic,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org"
                     tempSearchBase="ou=Temp,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org"

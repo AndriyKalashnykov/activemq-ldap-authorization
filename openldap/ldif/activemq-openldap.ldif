@@ -7,12 +7,12 @@ objectClass: organizationalUnit
 objectClass: top
 ou: ActiveMQ
 
-dn: ou=Services,dc=activemq,dc=apache,dc=org
+dn: ou=Services,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 ou: Services
 objectClass: organizationalUnit
 objectClass: top
 
-dn: cn=mqbroker,ou=Services,dc=activemq,dc=apache,dc=org
+dn: cn=mqbroker,ou=Services,ou=ActiveMQ,dc=activemq,dc=apache,dc=org
 cn: mqbroker
 objectClass: organizationalRole
 objectClass: top

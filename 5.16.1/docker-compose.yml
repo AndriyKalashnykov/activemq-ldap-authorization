@@ -4,8 +4,8 @@ services:
   openldap:
     image: osixia/openldap:1.5.0
     restart: unless-stopped
-    hostname: openldap
-    container_name: openldap
+    hostname: ${LDAP_SERVER_HOST}
+    container_name: ${LDAP_SERVER_HOST}
     ports:
       - "389:389"
       - "636:636"   
@@ -15,30 +15,30 @@ services:
       - /etc/ldap/slapd.d
       - /container/service/slapd/assets/certs/
     environment:
-      - LDAP_DOMAIN=activemq.apache.org
+      - LDAP_DOMAIN=${LDAP_DOMAIN}
       - LDAP_BASE_DN=${LDAP_BASE_DN}
-      - LDAP_ORGANISATION="Apache ActiveMQ Test Org"
-      - LDAP_ROOTPASS=admin     
-      - LDAP_ADMIN_PASSWORD=admin
+      - LDAP_ORGANISATION=${LDAP_ORGANISATION}
+      - LDAP_ROOTPASS=${LDAP_USER_PWD}     
+      - LDAP_ADMIN_PASSWORD=${LDAP_USER_PWD}
       - LDAP_TLS_VERIFY_CLIENT="never"      
     command: "--loglevel info --copy-service"   
     networks:
       ldap_net:
         ipv4_address: 172.28.1.10
     logging:
-      driver: "json-file"
+      driver: "${LOG_DRIVER}"
       options:
-        max-size: "10M"
-        max-file: "5"
+        max-size: "${LOG_MAX_SIZE}"
+        max-file: "${LOG_MAX_FILES}"
   activemq:
     image: andriykalashnykov/docker-activemq:5.16.1
     restart: unless-stopped
     hostname: activemq
     container_name: activemq    
     links:
-      - openldap    
+      - ${LDAP_SERVER_HOST}    
     depends_on:
-      - openldap  
+      - ${LDAP_SERVER_HOST}  
     ports:
       - "1883:1883"
       - "5672:5672"
@@ -47,10 +47,12 @@ services:
       - "61614:61614"
       - "61616:61616" 
     environment:
-      - LDAP_HOST=openldap
-      - LDAP_PORT=389
-      - ACTIVEMQ_OPTS_MEMORY=-Xms512M -Xmx2G
-      - PERCENT_JVM_HEAP=75
+      - LDAP_HOST=${LDAP_SERVER_HOST}
+      - LDAP_PORT=${LDAP_SERVER_PORT}
+      - LDAP_CONN_USER=${LDAP_USER}
+      - LDAP_CONN_USER_PWD=${LDAP_USER_PWD}
+      - ACTIVEMQ_OPTS_MEMORY=${ACTIVEMQ_OPTS_MEMORY}
+      - PERCENT_JVM_HEAP=${ACTIVEMQ_PERCENT_JVM_HEAP}
       - STORE_USAGE=${ACTIVEMQ_STORE_USAGE}
       - TEMP_USAGE=${ACTIVEMQ_TEMP_USAGE}
       - DEBUG=true
@@ -58,10 +60,10 @@ services:
       ldap_net:
         ipv4_address: 172.28.1.11
     logging:
-      driver: "json-file"
+      driver: "${LOG_DRIVER}"
       options:
-        max-size: "10M"
-        max-file: "5"
+        max-size: "${LOG_MAX_SIZE}"
+        max-file: "${LOG_MAX_FILES}"
   phpldapadmin:
     image: osixia/phpldapadmin:0.9.0
     hostname: phpldapadmin
@@ -72,18 +74,16 @@ services:
       - openldap
     ports:
       - "6543:443"    
-      # - "8180:80"
     environment:
       - PHPLDAPADMIN_LDAP_HOSTS=openldap
-      # - PHPLDAPADMIN_HTTPS=false
     networks:
       ldap_net:
         ipv4_address: 172.28.1.12  
     logging:
-      driver: "json-file"
+      driver: "${LOG_DRIVER}"
       options:
-        max-size: "10M"
-        max-file: "5"          
+        max-size: "${LOG_MAX_SIZE}"
+        max-file: "${LOG_MAX_FILES}"          
     command: "--loglevel info --copy-service"                       
 networks:
   ldap_net:
