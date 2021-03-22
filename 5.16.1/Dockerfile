@@ -9,8 +9,7 @@ ENV ACTIVEMQ apache-activemq-$ACTIVEMQ_VER
 ENV ACTIVEMQ_TCP=61616 ACTIVEMQ_AMQP=5672 ACTIVEMQ_STOMP=61613 ACTIVEMQ_MQTT=1883 ACTIVEMQ_WS=61614 ACTIVEMQ_UI=8161
 ENV SHA512_VAL=f98c9da5dafa2dc291070fecd57b7fccd0954cc8b2be09abc77ea66745b89283358297f308ec30dd47efd3e0c9d4cffc3821ef429f8f94d6c8971bbe933809b2
 
-# RUN apt-get update && yes | apt-get upgrade 
-# RUN yes | apt-get install lsof net-tools nmap
+RUN apt-get update && apt-get upgrade --yes && apt-get install openssl lsof net-tools nmap --yes && apt-get clean autoclean && apt-get autoremove --yes && rm -rf /var/lib/{apt,dpkg,cache,log}/
 
 ENV ACTIVEMQ_HOME /opt/activemq
 

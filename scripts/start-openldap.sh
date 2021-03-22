@@ -20,7 +20,8 @@ OPENLDAP_IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $OPENLDAP_CON
 echo "OPENLDAP_IP: https://$OPENLDAP_IP:389"
 
 # https://github.com/osixia/docker-phpLDAPadmin
-# --env PHPLDAPADMIN_LDAP_HOSTS=127.0.0.1.xip.io 
+
+# --env PHPLDAPADMIN_LDAP_HOSTS="[{'$OPENLDAP_CONTAINER': [{'server': [{'port': 389}]}]}]" -d osixia/phpldapadmin
 docker run --rm -d --hostname $PHPLDAPADMIN_CONTAINER --name $PHPLDAPADMIN_CONTAINER --link $OPENLDAP_CONTAINER -p 8080:80 -p 6443:443 --env PHPLDAPADMIN_LDAP_HOSTS=$OPENLDAP_CONTAINER --detach osixia/phpldapadmin:0.9.0
 PHPLDAP_IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" phpldapadmin)
 echo "PHPLDAP_IP: https://$PHPLDAP_IP"

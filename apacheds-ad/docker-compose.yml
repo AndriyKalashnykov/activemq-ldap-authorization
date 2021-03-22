@@ -1,57 +1,47 @@
 version: "3.8"
 
 services:
-  apacheds-ad:
+  apacheds:
     image: andriykalashnykov/apacheds-ad:latest
     restart: unless-stopped
-    hostname: apacheds-ad
-    container_name: apacheds-ad
+    hostname: ${LDAP_SERVER_HOST}
+    container_name: ${LDAP_SERVER_HOST}
     ports:
-      - "10389:10389"
-    # volumes:
-    #   - ../openldap/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
-    #   - /var/lib/ldap
-    #   - /etc/ldap/slapd.d
-    #   - /container/service/slapd/assets/certs/
-    # environment:
-    #   - LDAP_DOMAIN=activemq.apache.org
-    #   - LDAP_BASE_DN=${LDAP_BASE_DN}
-    #   - LDAP_ORGANISATION="Apache ActiveMQ Test Org"
-    #   - LDAP_ROOTPASS=admin     
-    #   - LDAP_ADMIN_PASSWORD=admin
-    #   - LDAP_TLS_VERIFY_CLIENT="never"      
+      - "10389:${LDAP_SERVER_PORT}"
+    volumes:
+      - ./ldif:/ldap/ldif
     command: ""   
     networks:
       ldap_net:
-        ipv4_address: 172.38.2.10
+        ipv4_address: ${IPV4_ADDRESS_PREFIX}.2.10
     logging:
-      driver: "json-file"
+      driver: "${LOG_DRIVER}"
       options:
-        max-size: "10M"
-        max-file: "5"
+        max-size: "${LOG_MAX_SIZE}"
+        max-file: "${LOG_MAX_FILES}"
   phpldapadmin:
     image: osixia/phpldapadmin:0.9.0
-    hostname: phpldapadmin
-    container_name: phpldapadmin
+    hostname: ${PHPLDAPADMIN_SERVER_HOST}
+    container_name: ${PHPLDAPADMIN_SERVER_HOST}
     links:
-      - apacheds-ad    
+      - ${LDAP_SERVER_HOST}    
     depends_on:
-      - apacheds-ad
+      - ${LDAP_SERVER_HOST}
     ports:
-      - "6543:443"    
-      # - "8180:80"
+      - "6543:${PHPLDAPADMIN_SERVER_PORT}"
     environment:
       PHPLDAPADMIN_LDAP_HOSTS: "#PYTHON2BASH:[
-        {'lapacheds-ad':[
+        {'${LDAP_SERVER_HOST}':[
           {'server': [
-            {'tls': False},
-            {'port': 10389},
-            {'base': \"array('dc=wimpi,dc=net')\"}
+            {'tls': ${LDAP_SERVER_TLS}},
+            {'port': ${LDAP_SERVER_PORT}},
+            {'base': \"array('${LDAP_BASE_DN}')\"}
           ]
           },
           {'login': [
-            {'bind_id': 'uid=test,ou=users,dc=wimpi,dc=net'},
-            {'bind_pass': '${LDAP_ADMIN_PASSWORD:-secret}'}
+            {'bind_id': '${LDAP_USER}'},
+            {'bind_id': '${LDAP_USER}'},
+            {'auth_type': 'session'}
           ]
           }
         ]
@@ -59,16 +49,16 @@ services:
         ]"
     networks:
       ldap_net:
-        ipv4_address: 172.38.2.11  
+        ipv4_address: ${IPV4_ADDRESS_PREFIX}.2.11  
     logging:
-      driver: "json-file"
+      driver: "${LOG_DRIVER}"
       options:
-        max-size: "10M"
-        max-file: "5"          
+        max-size: "${LOG_MAX_SIZE}"
+        max-file: "${LOG_MAX_FILES}"          
     command: "--loglevel debug --copy-service"                       
 networks:
   ldap_net:
     ipam:
       driver: default
       config:
-        - subnet: 172.38.0.0/16
+        - subnet: ${IPV4_ADDRESS_PREFIX}.0.0/16
