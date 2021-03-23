@@ -33,9 +33,11 @@ USER activemq
 COPY ./conf/* $ACTIVEMQ_HOME/conf/
 COPY ./bin/* $ACTIVEMQ_HOME/bin/
 
+RUN curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/jetty-util-$JETTY_VER.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/$JETTY_VER/jetty-util-$JETTY_VER.jar
 RUN curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/jetty-jaas-$JETTY_VER.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-jaas/$JETTY_VER/jetty-jaas-$JETTY_VER.jar
 RUN curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/jetty-security-$JETTY_VER.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-security/$JETTY_VER/jetty-security-$JETTY_VER.jar
 RUN curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/ldaptive-$LDAPTIVE_VER.jar https://repo1.maven.org/maven2/org/ldaptive/ldaptive/$LDAPTIVE_VER/ldaptive-$LDAPTIVE_VER.jar
+
 
 ADD init.sh /app/init.sh
 
