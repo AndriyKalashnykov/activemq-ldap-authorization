@@ -8,8 +8,6 @@ ACTIVEMQ_ENV=$ACTIVEMQ_BASE/bin/env
 
 [[ $DEBUG == true ]] && set -x
 
-sed -i "s|##### STORE_USAGE #####|${storeUsage}|" "$CONFIG_FILE"
-
 if [ ! -z "$LDAP_HOST" ];then
      sed -i "s|##### LDAP_HOST #####|${LDAP_HOST}|" $ACTIVEMQ_CONF_FILE
      sed -i "s|##### LDAP_HOST #####|${LDAP_HOST}|" $LOGIN_CONF_FILE
@@ -22,10 +20,42 @@ fi
 
 if [ ! -z "$LDAP_CONN_USER" ];then
      sed -i "s|##### LDAP_CONN_USER #####|${LDAP_CONN_USER}|" $ACTIVEMQ_CONF_FILE
+     sed -i "s|##### LDAP_CONN_USER #####|${LDAP_CONN_USER}|" $LOGIN_CONF_FILE
 fi
 
 if [ ! -z "$LDAP_CONN_USER_PWD" ];then
      sed -i "s|##### LDAP_CONN_USER_PWD #####|${LDAP_CONN_USER_PWD}|" $ACTIVEMQ_CONF_FILE
+     sed -i "s|##### LDAP_CONN_USER_PWD #####|${LDAP_CONN_USER_PWD}|" $LOGIN_CONF_FILE
+fi
+
+if [ ! -z "$LDAP_QUEUE_SEARCH_BASE" ];then
+     sed -i "s|##### LDAP_QUEUE_SEARCH_BASE #####|${LDAP_QUEUE_SEARCH_BASE}|" $ACTIVEMQ_CONF_FILE
+fi
+
+if [ ! -z "$LDAP_TOPIC_SEARCH_BASE" ];then
+     sed -i "s|##### LDAP_TOPIC_SEARCH_BASE #####|${LDAP_TOPIC_SEARCH_BASE}|" $ACTIVEMQ_CONF_FILE
+fi
+
+if [ ! -z "$LDAP_TEMP_SEARCH_BASE" ];then
+     sed -i "s|##### LDAP_TEMP_SEARCH_BASE #####|${LDAP_TEMP_SEARCH_BASE}|" $ACTIVEMQ_CONF_FILE
+fi
+
+if [ ! -z "$LDAP_REFRESH_INTERVAL" ];then
+     sed -i "s|##### LDAP_REFRESH_INTERVAL #####|${LDAP_REFRESH_INTERVAL}|" $ACTIVEMQ_CONF_FILE
+fi
+
+if [ ! -z "$LDAP_LEGACY_GROUP_MAPPING" ];then
+     sed -i "s|##### LDAP_LEGACY_GROUP_MAPPING #####|${LDAP_LEGACY_GROUP_MAPPING}|" $ACTIVEMQ_CONF_FILE
+fi
+
+# 
+
+if [ ! -z "$LDAP_USER_BASE" ];then
+     sed -i "s|##### LDAP_USER_BASE #####|${LDAP_USER_BASE}|" $LOGIN_CONF_FILE
+fi
+
+if [ ! -z "$LDAP_ROLE_BASE" ];then
+     sed -i "s|##### LDAP_ROLE_BASE #####|${LDAP_ROLE_BASE}|" $LOGIN_CONF_FILE
 fi
 
 if [ ! -z "$PERCENT_JVM_HEAP" ];then
@@ -37,10 +67,10 @@ if [ ! -z "$STORE_USAGE" ];then
 fi
 
 if [ ! -z "$TEMP_USAGE" ];then
-    sed -i "s|##### STEMP_USAGE #####|${TEMP_USAGE}|" $ACTIVEMQ_CONF_FILE
+    sed -i "s|##### TEMP_USAGE #####|${TEMP_USAGE}|" $ACTIVEMQ_CONF_FILE
 fi
 
-[[ -n ${ACTIVEMQ_OPTS_MEMORY} ]] && sed -ri "s/^(ACTIVEMQ_OPTS_MEMORY=).*/\1\"${ACTIVEMQ_OPTS_MEMORY}\"/" ${ACTIVEMQ_ENV}
+[[ -n ${OPTS_MEMORY} ]] && sed -ri "s/^(ACTIVEMQ_OPTS_MEMORY=).*/\1\"${OPTS_MEMORY}\"/" ${ACTIVEMQ_ENV}
 
 echo "###################################### activemq.xml ######################################"
 cat $LOGIN_CONF_FILE

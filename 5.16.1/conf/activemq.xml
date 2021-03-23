@@ -104,11 +104,11 @@
                     connectionURL="ldap://##### LDAP_HOST #####:##### LDAP_PORT #####"
                     connectionUsername="##### LDAP_CONN_USER #####"
                     connectionPassword="##### LDAP_CONN_USER_PWD #####"
-                    queueSearchBase="ou=Queue,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org"
-                    topicSearchBase="ou=Topic,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org"
-                    tempSearchBase="ou=Temp,ou=Destination,ou=ActiveMQ,dc=activemq,dc=apache,dc=org"
-                    refreshInterval="300000"
-                    legacyGroupMapping="false"/>
+                    queueSearchBase="##### LDAP_QUEUE_SEARCH_BASE #####"
+                    topicSearchBase="##### LDAP_TOPIC_SEARCH_BASE #####"
+                    tempSearchBase="##### LDAP_TEMP_SEARCH_BASE #####"
+                    refreshInterval="##### LDAP_REFRESH_INTERVAL #####"
+                    legacyGroupMapping="##### LDAP_LEGACY_GROUP_MAPPING #####"/>
 
                 <!-- works -->
                 <!-- <authorizationMap>
@@ -164,7 +164,7 @@
                     <storeUsage limit="##### STORE_USAGE #####"/>
                 </storeUsage>
                 <tempUsage>
-                    <tempUsage limit="##### STEMP_USAGE #####"/>
+                    <tempUsage limit="##### TEMP_USAGE #####"/>
                 </tempUsage>
             </systemUsage>
         </systemUsage>
