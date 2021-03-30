@@ -20,7 +20,8 @@ services:
       - LDAP_ORGANISATION=${LDAP_ORGANISATION}
       - LDAP_ROOTPASS=${LDAP_USER_PWD}     
       - LDAP_ADMIN_PASSWORD=${LDAP_USER_PWD}
-      - LDAP_TLS_VERIFY_CLIENT="never"      
+      - LDAP_TLS_VERIFY_CLIENT="never"     
+      - LDAP_TLS_CIPHER_SUITE=SECURE256:+SECURE128:+VERS-TLS-ALL:+VERS-TLS1.2:+RSA:+DHE-DSS:+CAMELLIA-128-CBC:+CAMELLIA-256-CBC 
     command: "--loglevel info --copy-service"   
     networks:
       ldap_net:
@@ -80,7 +81,7 @@ services:
     depends_on:
       - openldap
     ports:
-      - "6543:443"    
+      - "6443:443"    
     environment:
       - PHPLDAPADMIN_LDAP_HOSTS=openldap
     networks:

@@ -15,7 +15,7 @@ cd $SCRIPT_PARENT_DIR
 # https://github.com/osixia/docker-openldap/blob/master/example/docker-compose.yml
 
 # 1
-docker run -d --rm --hostname $OPENLDAP_CONTAINER --name $OPENLDAP_CONTAINER -p 389:389 -p 636:636 -v "$(pwd)/openldap/ldif":/container/service/slapd/assets/config/bootstrap/ldif/custom -e LDAP_DOMAIN=activemq.apache.org -e LDAP_BASE_DN="dc=activemq,dc=apache,dc=org" -e LDAP_ORGANISATION="Apache ActiveMQ Test Org" -e LDAP_ROOTPASS=admin -e LDAP_TLS_VERIFY_CLIENT=never osixia/openldap:1.5.0 --copy-service
+docker run -d --rm --hostname $OPENLDAP_CONTAINER --name $OPENLDAP_CONTAINER -p 389:389 -p 636:636 -v "$(pwd)/openldap/ldif":/container/service/slapd/assets/config/bootstrap/ldif/custom -e LDAP_DOMAIN=activemq.apache.org -e LDAP_BASE_DN="dc=activemq,dc=apache,dc=org" -e LDAP_ORGANISATION="Apache ActiveMQ Test Org" -e LDAP_ROOTPASS=admin -e LDAP_TLS_VERIFY_CLIENT=never -e LDAP_TLS_CIPHER_SUITE=SECURE256:+SECURE128:+VERS-TLS-ALL:+VERS-TLS1.2:+RSA:+DHE-DSS:+CAMELLIA-128-CBC:+CAMELLIA-256-CBC osixia/openldap:1.5.0 --copy-service
 OPENLDAP_IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $OPENLDAP_CONTAINER)
 echo "OPENLDAP_IP: https://$OPENLDAP_IP:389"
 
@@ -24,10 +24,11 @@ echo "OPENLDAP_IP: https://$OPENLDAP_IP:389"
 # --env PHPLDAPADMIN_LDAP_HOSTS="[{'$OPENLDAP_CONTAINER': [{'server': [{'port': 389}]}]}]" -d osixia/phpldapadmin
 docker run --rm -d --hostname $PHPLDAPADMIN_CONTAINER --name $PHPLDAPADMIN_CONTAINER --link $OPENLDAP_CONTAINER -p 8080:80 -p 6443:443 --env PHPLDAPADMIN_LDAP_HOSTS=$OPENLDAP_CONTAINER --detach osixia/phpldapadmin:0.9.0
 PHPLDAP_IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" phpldapadmin)
-echo "PHPLDAP_IP: https://$PHPLDAP_IP"
+# echo "PHPLDAP_IP: https://$PHPLDAP_IP"
+echo "PHPLDAP_IP: https://localhost:6443"
 echo "Login DN: cn=admin,dc=activemq,dc=apache,dc=org"
 echo "Password: admin"
-echo https://localhost:6443
+
 # echo http://localhost:8080
 
 # 2
