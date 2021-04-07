@@ -14,7 +14,7 @@ RUN useradd -r -M -d  /ldap ldap && \
 
 USER ldap
 
-# COPY users.ldif /ldap/ldif/users.ldif
+# COPY ./ldif/users.ldif /ldap/ldif/users.ldif
 
 EXPOSE 10389
 
