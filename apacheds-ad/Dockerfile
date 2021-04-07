@@ -6,7 +6,7 @@ RUN apt-get update && apt-get upgrade --yes && apt-get install openssl --yes && 
 
 RUN mkdir -p /ldap/ldif
 WORKDIR /ldap
-RUN wget https://github.com/kwart/ldap-server/releases/download/2017-09-04/ldap-server.jar
+RUN wget https://github.com/AndriyKalashnykov/ldap-server/releases/download/2021-04-07/ldap-server.jar
 
 RUN useradd -r -M -d  /ldap ldap && \
     chown -R ldap:ldap /ldap && \
@@ -18,4 +18,4 @@ USER ldap
 
 EXPOSE 10389
 
-CMD ["java","-jar","ldap-server.jar", "/ldap/ldif/users.ldif"]
+CMD ["java","-jar","ldap-server.jar", "/ldap/ldif/"]
