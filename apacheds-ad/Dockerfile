@@ -18,4 +18,8 @@ USER ldap
 
 EXPOSE 10389
 
+# mount LDIFs to import
+# 
+# volumes:
+#   - ./ldif:/ldap/ldif 
 CMD ["java","-jar","ldap-server.jar", "/ldap/ldif/"]
