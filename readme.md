@@ -1,6 +1,6 @@
 # ActiveMQ LDAP Authentication and Authorization
 
-This project demonstrates how to use <b>OpenLDAP</b> and <b>Apache DS</b> (to mimic <b>Microsoft Active Directory</b>) for Apache ActiveMQ Authentication and Authorization
+This project demonstrates how to use <b>OpenLDAP</b> and <b>Apache DS</b> (to mimic <b>Microsoft Active Directory</b>) for Apache ActiveMQ Authentication and Authorization it also shows how to secure ActiveMQ web console
 
 ## Pre-requisites
 
