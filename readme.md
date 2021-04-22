@@ -1,32 +1,73 @@
-# ActiveMQ/AMQ LDAP Authentication and Authorization
+# ActiveMQ LDAP Authentication and Authorization
 
-## ActiveMQ
+This project demonstrates how to use <b>OpenLDAP</b> and <b>Apache DS</b> (to mimic <b>Microsoft Active Directory</b>) for Apache ActiveMQ Authentication and Authorization
+
+## Pre-requisites
+
+* docker
+* docker-compose
+## Clone repo
 
 ```bash
-./scripts/install-activemq.sh
+git clone git@github.com:AndriyKalashnykov/activemq-ldap-authorization.git
+cd activemq-ldap-authorization
+```
 
-# ActiveMQ LDAP Web Console
-# https://eleipold.wordpress.com/author/eleipold/ 
-# https://www.workhorseintegrations.com/2020/05/14/securing-activemq-console-with-ldap/
-# https://github.com/tmielke/abloggerscode/blob/b154059f7df4c87fba26d7e65ad1dbb374a713c3/Articles/Blog/AMQJettyLDAP/jetty.xml
+## Provide DockerHub credentials
 
-cp /opt/apache-activemq-5.16.1/conf/activemq.xml ~/projects/activemq-ldap-authorization/5.16.1/conf
-cp /opt/apache-activemq-5.16.1/conf/jetty.xml ~/projects/activemq-ldap-authorization/5.16.1/conf
-cp /opt/apache-activemq-5.16.1/conf/login.config ~/projects/activemq-ldap-authorization/5.16.1/conf
-cp /opt/apache-activemq-5.16.1/conf/log4j.properties ~/projects/activemq-ldap-authorization/5.16.1/conf
-cp /opt/apache-activemq-5.16.1/bin/env ~/projects/activemq-ldap-authorization/5.16.1/bin/
+Edit `./activemq-ldap-authorization/scripts/set-env.sh`, uncomment and set following environment variables:
 
-open http://localhost:8161/admin
+```bash
+# DOCKER_LOGIN=
+# DOCKER_PWD=
+```
 
-# search for a group 
+## Run docker-compose to start up ActiveMQ, Open LDAP server and PHP LDAP Admin
 
-ldapsearch -x -H ldap://localhost:389 -a always -D "cn=admin,dc=activemq,dc=apache,dc=org" -w admin -b "ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org" -s sub "(&(objectClass=groupOfNames)(member=uid=admin,ou=user,ou=activemq,dc=activemq,dc=apache,dc=org))"  cn
+```bash
+cd 5.1.16
+docker-compose up
+```
 
-ldapsearch -x -H ldap://localhost:389 -a always -D "cn=admin,dc=activemq,dc=apache,dc=org" -w admin -b "ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org" -s sub "(&(objectClass=groupOfNames)(member:=uid=admin))" cn
+## ActiveMQ web console
 
-docker exec openldap ldapsearch -x -H ldap://localhost:389 -b ou=Group,ou=ActiveMQ,dc=activemq,dc=apache,dc=org -s sub "(&(objectClass=groupOfNames)(member:=uid=admin))" -D "cn=admin,dc=activemq,dc=apache,dc=org" -w admin cn
+In web browser open `http://127.0.0.1:8161/admin/` use <b>login</b>: `admin` and <b>password</b> `admin`
 
-# lsof -i:389
-# netstat -anp tcp | grep LISTEN | grep 389
-# nmap -sT -O localhost | grep 389
+```
+open http://127.0.0.1:8161/admin/
+```
+
+## PHP LDAP Admin web console
+
+In web browser open `https://localhost:6443/` 
+use <b>Login DN</b>: `cn=admin,dc=activemq,dc=apache,dc=org` and <b>Password</b>: `admin`
+
+```bash
+open https://localhost:6443/
+```
+
+## Test OpenLDAP search
+
+```bash
+./scripts/search-openldap.sh
+```
+## Start up Apache DS server and PHP LDAP Admin
+
+```bash
+cd activemq-ldap-authorization/apacheds-ad
+docker-compose up
+```
+
+## PHP LDAP Admin web console
+
+In web browser open `https://localhost:6443/` 
+use <b>Login DN</b>: `cn=mqbroker,ou=Services,ou=ActiveMQ,dc=activemq,dc=apache,dc=org` and <b>Password</b>: `admin`
+
+```bash
+open https://localhost:6443/
+```
+## Test Apache DS search
+
+```bash
+./scripts/search-apacheds.sh
 ```

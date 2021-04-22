@@ -28,7 +28,7 @@ services:
     depends_on:
       - ${LDAP_SERVER_HOST}
     ports:
-      - "6543:${PHPLDAPADMIN_SERVER_PORT}"
+      - "6443:${PHPLDAPADMIN_SERVER_PORT}"
     environment:
       PHPLDAPADMIN_LDAP_HOSTS: "#PYTHON2BASH:[
         {'${LDAP_SERVER_HOST}':[
