@@ -1,11 +1,13 @@
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FAndriyKalashnykov%2Factivemq-ldap-authorization&count_bg=%2333CD56&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 # ActiveMQ LDAP Authentication and Authorization
 
 This project demonstrates how to use <b>OpenLDAP</b> and <b>Apache DS</b> (to mimic <b>Microsoft Active Directory</b>) for Apache ActiveMQ Authentication and Authorization it also shows how to secure ActiveMQ web console
 
 ## Pre-requisites
 
-* docker
-* docker-compose
+* [docker](https://docs.docker.com/get-docker/)
+* [docker-compose](https://docs.docker.com/compose/install/)
+
 ## Clone repo
 
 ```bash
