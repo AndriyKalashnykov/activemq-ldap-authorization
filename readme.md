@@ -75,3 +75,11 @@ open https://localhost:6443/
 ```bash
 ./scripts/search-apacheds.sh
 ```
+
+## Samba aka Active Directory
+
+```bash
+cd samba
+docker build -t dev-ad -f Dockerfile .
+docker run --name dev-ad --hostname ak --privileged -p 636:636 -e SMB_ADMIN_PASSWORD=admin123! -v $PWD/:/opt/ad-scripts -v $PWD/samba-data:/var/lib/samba dev-ad
+```
