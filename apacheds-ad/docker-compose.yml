@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   apacheds:
     image: andriykalashnykov/apacheds-ad:latest
@@ -23,8 +21,6 @@ services:
     image: osixia/phpldapadmin:0.9.0
     hostname: ${PHPLDAPADMIN_SERVER_HOST}
     container_name: ${PHPLDAPADMIN_SERVER_HOST}
-    links:
-      - ${LDAP_SERVER_HOST}    
     depends_on:
       - ${LDAP_SERVER_HOST}
     ports:

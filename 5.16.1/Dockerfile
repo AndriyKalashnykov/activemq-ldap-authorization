@@ -1,17 +1,17 @@
-FROM openjdk:8-jre
+FROM eclipse-temurin:8-jre
 
 LABEL maintainer="AndriyKalashnykov@gmail.com"
 
-ENV ACTIVEMQ_VER 5.16.1
+ENV ACTIVEMQ_VER=5.16.1
 ENV JETTY_VER=9.4.35.v20201120
 ENV LDAPTIVE_VER=1.2.4
-ENV ACTIVEMQ apache-activemq-$ACTIVEMQ_VER
+ENV ACTIVEMQ=apache-activemq-$ACTIVEMQ_VER
 ENV ACTIVEMQ_TCP=61616 ACTIVEMQ_AMQP=5672 ACTIVEMQ_STOMP=61613 ACTIVEMQ_MQTT=1883 ACTIVEMQ_WS=61614 ACTIVEMQ_UI=8161
 ENV SHA512_VAL=f98c9da5dafa2dc291070fecd57b7fccd0954cc8b2be09abc77ea66745b89283358297f308ec30dd47efd3e0c9d4cffc3821ef429f8f94d6c8971bbe933809b2
 
 RUN apt-get update && apt-get upgrade --yes && apt-get install openssl lsof net-tools nmap --yes && apt-get clean autoclean && apt-get autoremove --yes && rm -rf /var/lib/{apt,dpkg,cache,log}/
 
-ENV ACTIVEMQ_HOME /opt/activemq
+ENV ACTIVEMQ_HOME=/opt/activemq
 
 RUN curl -Lo $ACTIVEMQ-bin.tar.gz "https://archive.apache.org/dist/activemq/$ACTIVEMQ_VER/$ACTIVEMQ-bin.tar.gz" 
 
@@ -45,5 +45,3 @@ WORKDIR $ACTIVEMQ_HOME
 EXPOSE $ACTIVEMQ_TCP $ACTIVEMQ_AMQP $ACTIVEMQ_STOMP $ACTIVEMQ_MQTT $ACTIVEMQ_WS $ACTIVEMQ_UI
 
 ENTRYPOINT ["/app/init.sh"]
-CMD ["/bin/sh", "-c", "/app/init.sh"]s
-# CMD ["/bin/sh", "-c", "bin/activemq console"]
