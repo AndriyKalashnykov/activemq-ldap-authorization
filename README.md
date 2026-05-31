@@ -1,24 +1,40 @@
 [![CI](https://github.com/AndriyKalashnykov/activemq-ldap-authorization/actions/workflows/docker-image.yml/badge.svg?branch=master)](https://github.com/AndriyKalashnykov/activemq-ldap-authorization/actions/workflows/docker-image.yml)
 [![Hits](https://hits.sh/github.com/AndriyKalashnykov/activemq-ldap-authorization.svg?style=flat&label=hits&color=33CD56)](https://hits.sh/github.com/AndriyKalashnykov/activemq-ldap-authorization/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
+[![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://app.renovatebot.com/dashboard#github/AndriyKalashnykov/activemq-ldap-authorization)
 
 # ActiveMQ LDAP Authentication and Authorization
 
-A runnable demo that delegates **Apache ActiveMQ 5.19.6** authentication and authorization to an LDAP directory instead of a local user file. It ships three interchangeable directory backends — **OpenLDAP**, **Apache DS** (faking Microsoft Active Directory), and **Samba AD** — and also shows how to secure the ActiveMQ Jetty web console. Everything runs as Docker images and `docker-compose` stacks; there is no application source to compile.
+Reference demo of delegating **Apache ActiveMQ 5.19.6** authentication and per-destination authorization to LDAP instead of a local user file. The **runtime surface** swaps between three directory backends — OpenLDAP, Apache DS (Microsoft AD mimic), and Samba AD — drives the broker's JAAS `LDAPLoginModule` and `cachedLDAPAuthorizationMap` from env-templated config, and secures the Jetty web console; the **delivery surface** adds a `bats` unit suite for the templating logic, an asserting Docker-Compose e2e (the full authN/authZ matrix), and a GitHub Actions pipeline that builds both Dockerfiles with a Trivy CVE scan, on Renovate-managed pins.
 
 ## Table of Contents
 
+- [Tech Stack](#tech-stack)
 - [How it works](#how-it-works)
-- [Architecture](#architecture)
-- [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
+- [Prerequisites](#prerequisites)
+- [Architecture](#architecture)
 - [Web consoles](#web-consoles)
 - [LDAP backends](#ldap-backends)
 - [Verifying authentication & authorization](#verifying-authentication--authorization)
-- [Make targets](#make-targets)
 - [Configuration](#configuration)
-- [Tech Stack](#tech-stack)
+- [Make targets](#make-targets)
+- [CI/CD](#cicd)
 - [License](#license)
+
+## Tech Stack
+
+| Component | Technology |
+|-----------|------------|
+| Message broker | Apache ActiveMQ 5.19.6 (`andriykalashnykov/docker-activemq:5.19.6`) |
+| Broker runtime | `eclipse-temurin:11-jre` (Java 11) |
+| Web console auth | Jetty 9.4.58 (`jetty-jaas`, `jetty-security`, `jetty-util`) + ldaptive 1.3.3 |
+| Directory (default) | OpenLDAP — `osixia/openldap:1.5.0` |
+| Directory (AD mimic) | Apache DS — `andriykalashnykov/apacheds-ad` |
+| Directory (AD) | Samba AD domain controller — `ubuntu:24.04` base |
+| LDAP admin UI | phpLDAPadmin — `phpldapadmin/phpldapadmin:2.3.11` (maintained leenooks v2; HTTP on :8080) |
+| LDAP account manager | LAM — `ghcr.io/ldapaccountmanager/lam:9.5` (standalone `openldap/` stack) |
+| Orchestration | Docker Compose v2 |
 
 ## How it works
 
@@ -28,6 +44,22 @@ ActiveMQ never owns its own user/role database. Two broker plugins, configured i
 - **Authorization** — `authorizationPlugin` with a `cachedLDAPAuthorizationMap` that reads queue/topic/temp permissions from LDAP group entries and refreshes them on an interval.
 
 The shipped `activemq.xml` and `login.config` are **templates**: they contain `##### PLACEHOLDER #####` tokens that the container entrypoint ([`5.19.6/init.sh`](5.19.6/init.sh)) rewrites from environment variables (`LDAP_HOST`, `LDAP_QUEUE_SEARCH_BASE`, …) at startup. To change the LDAP wiring, set the env vars — never hardcode values into the config files.
+
+## Quick Start
+
+Start the default stack — OpenLDAP + ActiveMQ + phpLDAPadmin:
+
+```bash
+make up                       # or: docker compose -f 5.19.6/docker-compose.yml up
+```
+
+Then open the [web consoles](#web-consoles). Stop everything with `make down`.
+
+## Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose v2](https://docs.docker.com/compose/install/) (`docker compose`)
+- `make` (optional, for the convenience targets below)
 
 ## Architecture
 
@@ -41,22 +73,6 @@ All backends serve the same base DN `dc=activemq,dc=apache,dc=org`:
 | `ou=Group,ou=ActiveMQ` | Role groups (`groupOfNames`), matched by `member=uid={1}` |
 | `ou=Destination,ou=ActiveMQ` → `ou=Queue` / `ou=Topic` / `ou=Temp` | Authorization entries — group membership grants admin/read/write on destinations |
 | `cn=mqbroker,ou=Services,...` | The broker's own bind account |
-
-## Prerequisites
-
-- [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose v2](https://docs.docker.com/compose/install/) (`docker compose`)
-- `make` (optional, for the convenience targets below)
-
-## Quick Start
-
-Start the default stack — OpenLDAP + ActiveMQ + phpLDAPadmin:
-
-```bash
-make up                       # or: docker compose -f 5.19.6/docker-compose.yml up
-```
-
-Then open the [web consoles](#web-consoles). Stop everything with `make down`.
 
 ## Web consoles
 
@@ -103,6 +119,13 @@ make search-apacheds     # manual: same against Apache DS (port 10389)
 
 > The harness waits for the `cachedLDAPAuthorizationMap` to warm up before asserting: immediately after startup the cache is cold (OpenLDAP may still be importing the LDIF) and every producer is transiently denied on the advisory topic. `make e2e` sets a short `LDAP_REFRESH_INTERVAL` so warm-up is fast and deterministic.
 
+## Configuration
+
+Operator-tunable values live in two files (keep version pins in sync between them):
+
+- [`5.19.6/.env`](5.19.6/.env) — consumed by `docker-compose`: LDAP DNs/search bases, ports, JVM/store sizing, log rotation.
+- [`scripts/set-env.sh`](scripts/set-env.sh) — consumed by the helper scripts: version pins (`ACTIVEMQ_VER`, `JETTY_VER`, `LDAPTIVE_VER`), image and container names, and the (commented-out) `DOCKER_LOGIN` / `DOCKER_PWD` DockerHub credentials used by `make push`.
+
 ## Make targets
 
 | Target | Description |
@@ -117,26 +140,17 @@ make search-apacheds     # manual: same against Apache DS (port 10389)
 | `make e2e` | Bring up stack + assert the LDAP authN/authZ contract |
 | `make ci` | Local pipeline: lint + test + build + scan |
 
-## Configuration
+## CI/CD
 
-Operator-tunable values live in two files (keep version pins in sync between them):
+GitHub Actions ([`CI`](.github/workflows/docker-image.yml)) runs on every push and pull request to `master`:
 
-- [`5.19.6/.env`](5.19.6/.env) — consumed by `docker-compose`: LDAP DNs/search bases, ports, JVM/store sizing, log rotation.
-- [`scripts/set-env.sh`](scripts/set-env.sh) — consumed by the helper scripts: version pins (`ACTIVEMQ_VER`, `JETTY_VER`, `LDAPTIVE_VER`), image and container names, and the (commented-out) `DOCKER_LOGIN` / `DOCKER_PWD` DockerHub credentials used by `make push`.
+| Job | What it does |
+|-----|--------------|
+| `build` | Matrix-builds both Dockerfiles (`5.19.6/`, `samba/`), each followed by a Trivy CVE scan |
+| `test` | `bats` unit tests for the config-templating logic |
+| `e2e` | Builds the broker image, composes the OpenLDAP + ActiveMQ stack, and asserts the LDAP authN/authZ matrix |
 
-## Tech Stack
-
-| Component | Technology |
-|-----------|------------|
-| Message broker | Apache ActiveMQ 5.19.6 (`andriykalashnykov/docker-activemq:5.19.6`) |
-| Broker runtime | `eclipse-temurin:11-jre` (Java 11) |
-| Web console auth | Jetty 9.4.58 (`jetty-jaas`, `jetty-security`, `jetty-util`) + ldaptive 1.3.3 |
-| Directory (default) | OpenLDAP — `osixia/openldap:1.5.0` |
-| Directory (AD mimic) | Apache DS — `andriykalashnykov/apacheds-ad` |
-| Directory (AD) | Samba AD domain controller — `ubuntu:24.04` base |
-| LDAP admin UI | phpLDAPadmin — `phpldapadmin/phpldapadmin:2.3.11` (maintained leenooks v2; HTTP on :8080) |
-| LDAP account manager | LAM — `ghcr.io/ldapaccountmanager/lam:9.5` (standalone `openldap/` stack) |
-| Orchestration | Docker Compose v2 |
+The Trivy scan is **report-only** (`exit-code: 0`): the base image and ActiveMQ-bundled transitive deps carry CVEs tracked in [`CLAUDE.md`](CLAUDE.md)'s upgrade backlog. No repository secrets are required. Dependency pins (Jetty/ldaptive via Maven, the Docker images, and GitHub Actions) are kept current by [Renovate](https://docs.renovatebot.com/). A weekly [`Cleanup old workflow runs`](.github/workflows/cleanup-runs.yml) workflow prunes old runs and caches.
 
 ## License
 
