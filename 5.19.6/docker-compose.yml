@@ -1,26 +1,22 @@
 services:
   openldap:
-    image: osixia/openldap:1.5.0
+    # Minimal image built from Symas's maintained OpenLDAP packages (replaces
+    # the unmaintained osixia/openldap:1.5.0). Suffix dc=activemq,dc=apache,dc=org
+    # is derived from LDAP_DOMAIN; the seed LDIF is slapadd'd from /seed.
+    build: ../openldap
+    image: ${OPENLDAP_IMAGE:-activemq-openldap:latest}
     restart: unless-stopped
     hostname: ${LDAP_SERVER_HOST}
     container_name: ${LDAP_SERVER_HOST}
     ports:
       - "389:389"
-      - "636:636"   
+      - "636:636"
     volumes:
-      - ../openldap/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
-      - /var/lib/ldap
-      - /etc/ldap/slapd.d
-      - /container/service/slapd/assets/certs/
+      - ../openldap/ldif:/seed:ro
     environment:
       - LDAP_DOMAIN=${LDAP_DOMAIN}
-      - LDAP_BASE_DN=${LDAP_BASE_DN}
       - LDAP_ORGANISATION=${LDAP_ORGANISATION}
-      - LDAP_ROOTPASS=${LDAP_USER_PWD}     
       - LDAP_ADMIN_PASSWORD=${LDAP_USER_PWD}
-      - LDAP_TLS_VERIFY_CLIENT="never"     
-      - LDAP_TLS_CIPHER_SUITE=SECURE256:+SECURE128:+VERS-TLS-ALL:+VERS-TLS1.2:+RSA:+DHE-DSS:+CAMELLIA-128-CBC:+CAMELLIA-256-CBC 
-    command: "--loglevel info --copy-service"   
     networks:
       ldap_net:
         ipv4_address: 172.28.1.10

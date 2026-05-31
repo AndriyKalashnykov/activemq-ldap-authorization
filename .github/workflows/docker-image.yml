@@ -31,6 +31,10 @@ jobs:
             dockerfile: ./samba/Dockerfile
             image: samba-ad:scan
             scan: true
+          - context: ./openldap
+            dockerfile: ./openldap/Dockerfile
+            image: activemq-openldap:scan
+            scan: true
 
     steps:
     - name: Checkout

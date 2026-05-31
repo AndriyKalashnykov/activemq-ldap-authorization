@@ -46,7 +46,7 @@ C4Context
 | Message broker | Apache ActiveMQ 5.19.6 (`andriykalashnykov/docker-activemq:5.19.6`) |
 | Broker runtime | `eclipse-temurin:25-jre` (Java 25 LTS) |
 | Web console auth | Jetty 9.4.58 (`jetty-jaas`, `jetty-security`, `jetty-util`); JAAS delegated to ActiveMQ's `LDAPLoginModule` |
-| Directory (default) | OpenLDAP — `osixia/openldap:1.5.0` |
+| Directory (default) | OpenLDAP — Symas-built (`openldap/Dockerfile`, slapd 2.6.x) |
 | Directory (AD mimic) | Apache DS — `andriykalashnykov/apacheds-ad` |
 | Directory (AD) | Samba AD domain controller — `ubuntu:26.04` base |
 | LDAP admin UI | phpLDAPadmin — `phpldapadmin/phpldapadmin:2.3.11` (maintained leenooks v2; HTTP on :8080) |
