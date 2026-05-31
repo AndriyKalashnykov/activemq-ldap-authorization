@@ -35,8 +35,11 @@ Demo credentials throughout are `admin`/`admin` and `user`/`admin` (passwords ar
 - `apacheds-ad/` — Apache DS backend stack (image `andriykalashnykov/apacheds-ad`, LDAP on host port `10389`). `ldif/users.ldif` adds Microsoft `sAMAccountName`/`memberOf` schema to mimic AD.
 - `openldap/` — standalone OpenLDAP compose + seed LDIF, used by `scripts/start-openldap.sh`.
 - `samba/` — Samba-as-AD domain controller (`Dockerfile` + provisioning scripts), an alternative to Apache DS.
-- `scripts/` — operational helpers (see below).
-- `.github/workflows/docker-image.yml` — CI: builds `./5.16.1` Dockerfile only (no push, no test).
+- `scripts/` — operational helpers (see below); `scripts/lib.sh` holds the sourceable, unit-tested config-templating functions.
+- `tests/templating.bats` — `bats` unit tests for `scripts/lib.sh` (the env→config substitution logic). Run via `make test`.
+- `e2e/e2e-test.sh` — asserting end-to-end test of the LDAP authN/authZ contract against the composed stack. Run via `make e2e`.
+- `.env.example` — committed source-of-truth defaults (LDAP/broker hosts, ports, demo creds, e2e tunables); sourced by `e2e/e2e-test.sh`.
+- `.github/workflows/docker-image.yml` — CI (`name: CI`): matrix-builds both Dockerfiles + Trivy scan (report-only), `test` (bats), and `e2e` (compose authZ contract) jobs.
 
 ## Common Commands
 
@@ -65,13 +68,16 @@ cd apacheds-ad && docker-compose up   # LDAP on host port 10389
 ```
 Note: `build.sh` builds `apacheds-ad` from a `Dockerfile` that is **not** committed to the repo — that step only works locally if the file exists.
 
-### Verify LDAP / smoke-test authorization
+### Test layers
 ```bash
-./scripts/search-openldap.sh     # ldapwhoami + ldapsearch against OpenLDAP (port 389)
-./scripts/search-apacheds.sh     # same against Apache DS (port 10389)
-./scripts/test-activemq.sh       # produce messages as admin/user to allowed & denied destinations
+make test                # unit: bats over scripts/lib.sh config-templating logic
+make e2e                 # e2e: compose up → assert LDAP authN/authZ matrix → tear down
+./scripts/search-openldap.sh   # manual ldapsearch against OpenLDAP (port 389)
+./scripts/search-apacheds.sh   # manual ldapsearch against Apache DS (port 10389)
 ```
-`test-activemq.sh` is the closest thing to an authorization test: it `docker exec`s the broker's CLI producer as different users against queues/topics they should and should not be able to write to, exercising the `cachedLDAPAuthorizationMap` rules.
+`make e2e` ([`e2e/e2e-test.sh`](e2e/e2e-test.sh)) is the asserting authorization test: it produces as `admin`/`user` against queues they should and should not write to and asserts the outcomes (`admin`→`ADMINS.*` allowed, `user`→`USERS.*` allowed, `user`→`ADMINS.*` denied), exercising `cachedLDAPAuthorizationMap`. `scripts/test-activemq.sh` is the older, non-asserting exploration script (superseded by the e2e harness; kept for manual poking).
+
+**Known startup behavior — authz cache warm-up (non-obvious):** `cachedLDAPAuthorizationMap` is cold for a short window after the broker starts (OpenLDAP may still be importing the LDIF; the map populates on first refresh). During that window **every** producer is denied on `topic://ActiveMQ.Advisory.Connection` — including `admin` — so an authz test that runs too early sees spurious denials. Once warm, the real per-destination matrix is enforced. `e2e/e2e-test.sh` polls `admin`→`queue://TEST` until it succeeds before asserting, and `make e2e` sets a short `LDAP_REFRESH_INTERVAL` (15s) so warm-up is fast and deterministic. The production default `LDAP_REFRESH_INTERVAL` is 300000ms (5 min) — see `5.16.1/.env`.
 
 ### Local (non-Docker) broker
 `scripts/install-activemq-local.sh` downloads ActiveMQ to `/opt` and drops the Jetty/ldaptive jars in; `run-activemq-local.sh` / `stop-activemq-local.sh` manage it. These are an alternative to the container path and use `sudo`.

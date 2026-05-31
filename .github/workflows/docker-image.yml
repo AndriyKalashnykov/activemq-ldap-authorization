@@ -56,3 +56,28 @@ jobs:
         # once those upgrades land so the scan becomes a blocking gate.
         exit-code: '0'
         vuln-type: os,library
+
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+    - name: Unit tests (bats — config templating)
+      run: make test
+
+  e2e:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+    - name: Build broker image
+      run: docker build -t andriykalashnykov/docker-activemq:5.16.1 ./5.16.1
+
+    - name: E2E (LDAP authN/authZ contract)
+      run: make e2e
