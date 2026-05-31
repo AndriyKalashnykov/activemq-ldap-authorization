@@ -66,6 +66,17 @@ else
   fail "broker console not reachable within ${READY_TIMEOUT}s"
 fi
 
+echo "== web console login (Jetty JAAS -> ActiveMQ LDAPLoginModule) =="
+# Closes the coverage gap that hid the ldaptive-2.x console regression: the
+# console must accept valid LDAP creds (admin is in the admins role), not just
+# return 401 to anonymous. A 500 here = the console JAAS realm is misconfigured.
+login_code=$(curl -s -o /dev/null -w '%{http_code}' -u "${ADMIN_USER}:${ADMIN_PW}" "http://${CONSOLE_HOST}:${CONSOLE_PORT}/admin/" 2>/dev/null || true)
+[ "$login_code" = "200" ] && pass "console login admin/admin -> 200 (LDAP authN + admins role resolved)" \
+                          || fail "console login admin/admin -> ${login_code} (expected 200; 500 = broken JAAS realm, 403 = role not resolved)"
+bad_code=$(curl -s -o /dev/null -w '%{http_code}' -u "${ADMIN_USER}:wrong_${RANDOM}" "http://${CONSOLE_HOST}:${CONSOLE_PORT}/admin/" 2>/dev/null || true)
+[ "$bad_code" = "401" ] && pass "console login with bad password -> 401" \
+                        || fail "console login with bad password -> ${bad_code} (expected 401)"
+
 echo "== config templating resolved (no leftover placeholders) =="
 for f in activemq.xml login.config; do
   if docker exec "$ACTIVEMQ_CONTAINER" grep -q '#####' "${CONF_DIR}/${f}" 2>/dev/null; then

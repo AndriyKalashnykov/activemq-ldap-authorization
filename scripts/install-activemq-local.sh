@@ -23,7 +23,6 @@ sudo mv /tmp/apache-activemq-$ACTIVEMQ_VER /opt/
 
 curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/jetty-jaas-$JETTY_VER.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-jaas/$JETTY_VER/jetty-jaas-$JETTY_VER.jar
 curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/jetty-security-$JETTY_VER.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-security/$JETTY_VER/jetty-security-$JETTY_VER.jar
-curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/ldaptive-$LDAPTIVE_VER.jar https://repo1.maven.org/maven2/org/ldaptive/ldaptive/$LDAPTIVE_VER/ldaptive-$LDAPTIVE_VER.jar
 
 cd $SCRIPT_PARENT_DIR
 
