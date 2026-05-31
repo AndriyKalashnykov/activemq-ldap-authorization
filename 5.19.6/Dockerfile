@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11.0.31_11-jre
+FROM eclipse-temurin:25.0.3_9-jre
 
 LABEL maintainer="AndriyKalashnykov@gmail.com"
 
