@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 # Unit tests for scripts/lib.sh — the env-var -> config templating logic that
-# 5.16.1/init.sh runs at container startup. Sources the REAL lib.sh (never a
+# the broker init.sh runs at container startup. Sources the REAL lib.sh (never a
 # copy) so the production substitution code is what's exercised.
 
 setup() {

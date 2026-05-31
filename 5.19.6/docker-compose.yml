@@ -30,7 +30,7 @@ services:
         max-size: "${LOG_MAX_SIZE}"
         max-file: "${LOG_MAX_FILES}"
   activemq:
-    image: andriykalashnykov/docker-activemq:5.16.1
+    image: andriykalashnykov/docker-activemq:5.19.6
     restart: unless-stopped
     hostname: activemq
     container_name: activemq    
