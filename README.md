@@ -5,7 +5,7 @@
 
 # ActiveMQ LDAP Authentication and Authorization
 
-Reference demo of delegating **Apache ActiveMQ 5.19.6** authentication and per-destination authorization to LDAP instead of a local user file. The **runtime surface** swaps between three directory backends — OpenLDAP, Apache DS (Microsoft AD mimic), and Samba AD — drives the broker's JAAS `LDAPLoginModule` and `cachedLDAPAuthorizationMap` from env-templated config, and secures the Jetty web console; the **delivery surface** adds a `bats` unit suite for the templating logic, an asserting Docker-Compose e2e (the full authN/authZ matrix), and a GitHub Actions pipeline that builds both Dockerfiles with a Trivy CVE scan, on Renovate-managed pins.
+Reference demo of delegating **Apache ActiveMQ 6.2.6** authentication and per-destination authorization to LDAP instead of a local user file. The **runtime surface** swaps between three directory backends — OpenLDAP, Apache DS (Microsoft AD mimic), and Samba AD — drives the broker's JAAS `LDAPLoginModule` and `cachedLDAPAuthorizationMap` from env-templated config, and secures the Jetty web console; the **delivery surface** adds a `bats` unit suite for the templating logic, an asserting Docker-Compose e2e (the full authN/authZ matrix), and a GitHub Actions pipeline that builds the three Dockerfiles with a blocking Trivy CVE scan, on Renovate-managed pins.
 
 ```mermaid
 C4Context
@@ -43,9 +43,9 @@ C4Context
 
 | Component | Technology |
 |-----------|------------|
-| Message broker | Apache ActiveMQ 5.19.6 (`andriykalashnykov/docker-activemq:5.19.6`) |
+| Message broker | Apache ActiveMQ 6.2.6 (`andriykalashnykov/docker-activemq:6.2.6`) |
 | Broker runtime | `eclipse-temurin:25-jre` (Java 25 LTS) |
-| Web console auth | Jetty 9.4.58 (`jetty-jaas`, `jetty-security`, `jetty-util`); JAAS delegated to ActiveMQ's `LDAPLoginModule` |
+| Web console auth | Jetty 11.0.26 (bundled with the broker, incl. `jetty-jaas`); JAAS delegated to ActiveMQ's `LDAPLoginModule` |
 | Directory (default) | OpenLDAP — Symas-built (`openldap/Dockerfile`, slapd 2.6.x) |
 | Directory (AD mimic) | Apache DS — `andriykalashnykov/apacheds-ad` |
 | Directory (AD) | Samba AD domain controller — `ubuntu:26.04` base |
@@ -55,20 +55,20 @@ C4Context
 
 ## How it works
 
-ActiveMQ never owns its own user/role database. Two broker plugins, configured in [`5.19.6/conf/activemq.xml`](5.19.6/conf/activemq.xml), delegate to LDAP at runtime:
+ActiveMQ never owns its own user/role database. Two broker plugins, configured in [`6.2.6/conf/activemq.xml`](6.2.6/conf/activemq.xml), delegate to LDAP at runtime:
 
-- **Authentication** — `jaasAuthenticationPlugin` using the `LDAPLogin` realm defined in [`5.19.6/conf/login.config`](5.19.6/conf/login.config) (`org.apache.activemq.jaas.LDAPLoginModule`).
+- **Authentication** — `jaasAuthenticationPlugin` using the `LDAPLogin` realm defined in [`6.2.6/conf/login.config`](6.2.6/conf/login.config) (`org.apache.activemq.jaas.LDAPLoginModule`).
 - **Authorization** — `authorizationPlugin` with a `cachedLDAPAuthorizationMap` that reads queue/topic/temp permissions from LDAP group entries and refreshes them on an interval.
-- **Web console** — the Jetty admin console ([`5.19.6/conf/jetty.xml`](5.19.6/conf/jetty.xml)) authenticates against the **same** `LDAPLogin` realm via a `JAASLoginService`; LDAP group `cn`s map to the `users`/`admins` console roles. Both the broker and the console share one LDAP login module.
+- **Web console** — the Jetty admin console ([`6.2.6/conf/jetty.xml`](6.2.6/conf/jetty.xml)) authenticates against the **same** `LDAPLogin` realm via a `JAASLoginService`; LDAP group `cn`s map to the `users`/`admins` console roles. Both the broker and the console share one LDAP login module.
 
-The shipped `activemq.xml` and `login.config` are **templates**: they contain `##### PLACEHOLDER #####` tokens that the container entrypoint ([`5.19.6/init.sh`](5.19.6/init.sh)) rewrites from environment variables (`LDAP_HOST`, `LDAP_QUEUE_SEARCH_BASE`, …) at startup. To change the LDAP wiring, set the env vars — never hardcode values into the config files.
+The shipped `activemq.xml` and `login.config` are **templates**: they contain `##### PLACEHOLDER #####` tokens that the container entrypoint ([`6.2.6/init.sh`](6.2.6/init.sh)) rewrites from environment variables (`LDAP_HOST`, `LDAP_QUEUE_SEARCH_BASE`, …) at startup. To change the LDAP wiring, set the env vars — never hardcode values into the config files.
 
 ## Quick Start
 
 Start the default stack — OpenLDAP + ActiveMQ + phpLDAPadmin:
 
 ```bash
-make up                       # or: docker compose -f 5.19.6/docker-compose.yml up
+make up                       # or: docker compose -f 6.2.6/docker-compose.yml up
 ```
 
 Then open the [web consoles](#web-consoles). Stop everything with `make down`.
@@ -139,7 +139,7 @@ make search-apacheds     # manual: same against Apache DS (port 10389)
 
 Operator-tunable values live in two files (keep version pins in sync between them):
 
-- [`5.19.6/.env`](5.19.6/.env) — consumed by `docker-compose`: LDAP DNs/search bases, ports, JVM/store sizing, log rotation.
+- [`6.2.6/.env`](6.2.6/.env) — consumed by `docker-compose`: LDAP DNs/search bases, ports, JVM/store sizing, log rotation.
 - [`scripts/set-env.sh`](scripts/set-env.sh) — consumed by the helper scripts: version pins (`ACTIVEMQ_VER`, `JETTY_VER`), image and container names, and the (commented-out) `DOCKER_LOGIN` / `DOCKER_PWD` DockerHub credentials used by `make push`.
 
 ## Make targets
@@ -163,12 +163,12 @@ GitHub Actions ([`CI`](.github/workflows/docker-image.yml)) runs on every push a
 
 | Job | What it does |
 |-----|--------------|
-| `build` | Matrix-builds both Dockerfiles (`5.19.6/`, `samba/`), each followed by a blocking Trivy CVE scan (waivers in `.trivyignore`) |
+| `build` | Matrix-builds the three Dockerfiles (`6.2.6/`, `samba/`, `openldap/`), each followed by a blocking Trivy CVE scan |
 | `test` | `bats` unit tests for the config-templating logic |
 | `e2e` | Builds the broker image, composes the OpenLDAP + ActiveMQ stack, and asserts the LDAP authN/authZ matrix |
 | `e2e-samba` | Provisions the Samba AD domain controller and asserts it serves the AD directory over LDAP (`--privileged`) |
 
-The Trivy scan is a **blocking gate** (`exit-code: 1`): removable findings are deleted from the images (the dormant `lib/camel` jars; Canonical's `pebble` base binary), and the residual EOL ActiveMQ-bundled Spring/Jetty CVEs — fixable only by the ActiveMQ 6.x migration — are documented and waived in [`.trivyignore`](.trivyignore). The gate fails on any new fixable CVE. No repository secrets are required. Dependency pins (Jetty via Maven, the Docker images, and GitHub Actions) are kept current by [Renovate](https://docs.renovatebot.com/). A weekly [`Cleanup old workflow runs`](.github/workflows/cleanup-runs.yml) workflow prunes old runs and caches.
+The Trivy scan is a **blocking gate** (`exit-code: 1`): ActiveMQ 6.2.6 bundles patched Spring 6.2.x (clearing 4 of the 5 EOL CVEs 5.19.6 carried), the dormant `lib/camel` jars and the Canonical `pebble` base binary are removed, and the samba/openldap images apt-upgrade their bases (both scan clean). The single residual — `jetty-http` CVE-2026-2332, fixed only in Jetty 12 (6.2.6 bundles Jetty 11) — is documented and waived in [`.trivyignore`](.trivyignore). The gate fails on any new fixable CVE. No repository secrets are required. Dependency pins (Jetty via Maven, the Docker images, and GitHub Actions) are kept current by [Renovate](https://docs.renovatebot.com/). A weekly [`Cleanup old workflow runs`](.github/workflows/cleanup-runs.yml) workflow prunes old runs and caches.
 
 ## License
 
