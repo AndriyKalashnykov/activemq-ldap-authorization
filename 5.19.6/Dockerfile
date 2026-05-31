@@ -14,8 +14,11 @@ ENV SHA512_VAL=cdf98fd42501bda694dbcee85bfaf33d8548091402f9cb2e768bc2e0b09059720
 
 # curl is installed explicitly: the eclipse-temurin:25 base (Ubuntu 24.04)
 # dropped curl from the image, unlike the older :11-jre (Jammy) base that
-# shipped it. The ActiveMQ tarball + Jetty jars below are fetched with curl.
-RUN apt-get update && apt-get upgrade --yes && apt-get install --yes --no-install-recommends curl openssl lsof net-tools nmap && apt-get clean autoclean && apt-get autoremove --yes && rm -rf /var/lib/{apt,dpkg,cache,log}/
+# shipped it. The ActiveMQ tarball + the Jetty jar below are fetched with curl.
+# `rm /usr/bin/pebble`: the temurin:25 base ships a stray ~10 MB Go ACME-test
+# binary (not apt-managed, not dpkg-owned) the broker never uses; it carried 8
+# HIGH Go-stdlib CVEs. Removing it is attack-surface reduction, not a workaround.
+RUN apt-get update && apt-get upgrade --yes && apt-get install --yes --no-install-recommends curl openssl lsof net-tools nmap && apt-get clean autoclean && apt-get autoremove --yes && rm -rf /var/lib/{apt,dpkg,cache,log}/ && rm -f /usr/bin/pebble
 
 ENV ACTIVEMQ_HOME=/opt/activemq
 
@@ -28,20 +31,27 @@ RUN if [ "$SHA512_VAL" != "$(sha512sum $ACTIVEMQ-bin.tar.gz | awk '{print($1)}')
         exit 1; \
     fi;
 
+# lib/camel/ (camel-core 2.25.4 + camel-jms/-spring) is removed: the templated
+# activemq.xml declares no <camelContext>/import, so the camel route engine is
+# never loaded. camel 2.x is EOL (CVE-2020-11971 has no 2.x fix); deleting the
+# dormant jars eliminates the finding outright rather than suppressing it.
 RUN tar xzf $ACTIVEMQ-bin.tar.gz -C  /opt && \
     ln -s /opt/$ACTIVEMQ $ACTIVEMQ_HOME && \
     useradd -r -M -d $ACTIVEMQ_HOME activemq && \
     chown -R activemq:activemq /opt/$ACTIVEMQ && \
-    chown -h activemq:activemq $ACTIVEMQ_HOME 
+    chown -h activemq:activemq $ACTIVEMQ_HOME && \
+    rm -rf /opt/$ACTIVEMQ/lib/camel
 
 USER activemq
 
 COPY ./conf/* $ACTIVEMQ_HOME/conf/
 COPY ./bin/* $ACTIVEMQ_HOME/bin/
 
-RUN curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/jetty-util-$JETTY_VER.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/$JETTY_VER/jetty-util-$JETTY_VER.jar && \
-    curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/jetty-jaas-$JETTY_VER.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-jaas/$JETTY_VER/jetty-jaas-$JETTY_VER.jar && \
-    curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/jetty-security-$JETTY_VER.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-security/$JETTY_VER/jetty-security-$JETTY_VER.jar
+# Only jetty-jaas is overlaid: it is the single jar genuinely absent from the
+# stock 5.19.6 distribution (it alone contains org.eclipse.jetty.jaas.JAASLoginService,
+# which jetty.xml requires). jetty-util and jetty-security already ship stock in
+# lib/web/ — overlaying them duplicated jars and risked cross-jar version skew.
+RUN curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/jetty-jaas-$JETTY_VER.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-jaas/$JETTY_VER/jetty-jaas-$JETTY_VER.jar
 
 
 COPY init.sh /app/init.sh

@@ -1,0 +1,42 @@
+# Trivy ignore file — documented waivers for the ActiveMQ broker image.
+#
+# Every CVE below sits in a transitive jar that Apache ActiveMQ 5.19.6 BUNDLES
+# from an END-OF-LIFE dependency line (Spring 5.3.x — OSS-EOL Aug 2024; Jetty
+# 9.4.x — security-EOL Aug 2025). The fixes exist ONLY in the jakarta.* major
+# successors (Spring 6 / Jetty 12), which require ActiveMQ 6.x (Jakarta, Java
+# 17+) — a migration tracked as a backlog epic, not a drop-in bump. The latest
+# 5.x (5.19.7) bundles byte-identical versions, so no 5.x upgrade clears these.
+#
+# Each is additionally UNREACHABLE in this broker's configuration (see per-CVE
+# notes). Reviewed 2026-05-31; re-review when the ActiveMQ pin or its bundled
+# Spring/Jetty versions change (tie to the ACTIVEMQ_VER bump checklist).
+#
+# The genuinely-removable findings (camel-core, the base `pebble` Go binary)
+# are DELETED from the images, not listed here — suppression is only for the
+# unfixable-without-6.x set below.
+
+# spring-web 5.3.39 — CVE-2016-1000027 (CRITICAL): RCE via Spring's
+# HttpInvokerServiceExporter Java deserialization. The broker exposes no
+# HttpInvoker endpoint. Fixed only in Spring 6.0.0.
+# https://spring.io/security/cve-2016-1000027
+CVE-2016-1000027
+
+# spring-core 5.3.39 — CVE-2025-41249: method-security annotation bypass;
+# requires @EnableMethodSecurity (Spring Security), which the broker does not
+# use. Fixed only in Spring 6.x (5.3.x fix is commercial-only / Tanzu).
+# https://spring.io/security/cve-2025-41249
+CVE-2025-41249
+
+# spring-webmvc 5.3.39 — CVE-2024-38816 / CVE-2024-38819: path traversal in
+# functional static-resource serving (RouterFunctions / WebMvc.fn). The
+# ActiveMQ web console does not serve static resources via functional routing.
+# Fixed only in Spring 6.1.x.
+# https://spring.io/security/cve-2024-38816
+CVE-2024-38816
+CVE-2024-38819
+
+# jetty-http 9.4.58.v20250814 — CVE-2026-2332: in the bundled Jetty that serves
+# the web console. 9.4.x is EOL; 9.4.58 is the final, most-patched 9.4.x — the
+# fix exists only in Jetty 12 (= ActiveMQ 6.x). Residual risk is bounded: the
+# console binds inside the container and is not intended to be internet-exposed.
+CVE-2026-2332

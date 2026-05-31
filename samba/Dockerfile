@@ -17,7 +17,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
       iproute2 openssl vim && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN rm -f /etc/krb5.conf && mkdir -p /opt/ad-scripts
+# Remove Canonical's `pebble` service-manager binary baked into the ubuntu:26.04
+# base (~10 MB Go binary, not apt-managed). The DC is launched via the CMD
+# below, never via pebble, so it is dead weight carrying 8 HIGH Go-stdlib CVEs.
+RUN rm -f /usr/bin/pebble && rm -f /etc/krb5.conf && mkdir -p /opt/ad-scripts
 
 WORKDIR /opt/ad-scripts
 

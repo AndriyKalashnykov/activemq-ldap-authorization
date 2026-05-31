@@ -163,12 +163,12 @@ GitHub Actions ([`CI`](.github/workflows/docker-image.yml)) runs on every push a
 
 | Job | What it does |
 |-----|--------------|
-| `build` | Matrix-builds both Dockerfiles (`5.19.6/`, `samba/`), each followed by a Trivy CVE scan |
+| `build` | Matrix-builds both Dockerfiles (`5.19.6/`, `samba/`), each followed by a blocking Trivy CVE scan (waivers in `.trivyignore`) |
 | `test` | `bats` unit tests for the config-templating logic |
 | `e2e` | Builds the broker image, composes the OpenLDAP + ActiveMQ stack, and asserts the LDAP authN/authZ matrix |
 | `e2e-samba` | Provisions the Samba AD domain controller and asserts it serves the AD directory over LDAP (`--privileged`) |
 
-The Trivy scan is **report-only** (`exit-code: 0`): the base image and ActiveMQ-bundled transitive deps carry CVEs tracked in [`CLAUDE.md`](CLAUDE.md)'s upgrade backlog. No repository secrets are required. Dependency pins (Jetty via Maven, the Docker images, and GitHub Actions) are kept current by [Renovate](https://docs.renovatebot.com/). A weekly [`Cleanup old workflow runs`](.github/workflows/cleanup-runs.yml) workflow prunes old runs and caches.
+The Trivy scan is a **blocking gate** (`exit-code: 1`): removable findings are deleted from the images (the dormant `lib/camel` jars; Canonical's `pebble` base binary), and the residual EOL ActiveMQ-bundled Spring/Jetty CVEs — fixable only by the ActiveMQ 6.x migration — are documented and waived in [`.trivyignore`](.trivyignore). The gate fails on any new fixable CVE. No repository secrets are required. Dependency pins (Jetty via Maven, the Docker images, and GitHub Actions) are kept current by [Renovate](https://docs.renovatebot.com/). A weekly [`Cleanup old workflow runs`](.github/workflows/cleanup-runs.yml) workflow prunes old runs and caches.
 
 ## License
 
