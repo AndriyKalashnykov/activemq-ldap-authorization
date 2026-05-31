@@ -64,6 +64,37 @@ services:
       options:
         max-size: "${LOG_MAX_SIZE}"
         max-file: "${LOG_MAX_FILES}"
+  hawtio:
+    # Standalone hawtio management console (Tomcat 11 + hawtio 5.x), LDAP-secured
+    # via the SAME LDAPLogin realm as the broker (hawtio/Dockerfile). Console UI
+    # at http://localhost:${HAWTIO_HOST_PORT:-8090}/hawtio/ — log in with LDAP
+    # creds; then use the Connect tab to manage the broker's (also LDAP-secured)
+    # Jolokia at http://activemq:8161/api/jolokia.
+    build: ../hawtio
+    image: ${HAWTIO_IMAGE:-activemq-hawtio:latest}
+    restart: unless-stopped
+    hostname: hawtio
+    container_name: hawtio
+    depends_on:
+      - ${LDAP_SERVER_HOST}
+      - activemq
+    ports:
+      - "${HAWTIO_HOST_PORT:-8090}:8080"
+    environment:
+      - LDAP_HOST=${LDAP_SERVER_HOST}
+      - LDAP_PORT=${LDAP_SERVER_PORT}
+      - LDAP_CONN_USER=${LDAP_USER}
+      - LDAP_CONN_USER_PWD=${LDAP_USER_PWD}
+      - LDAP_USER_BASE=${LDAP_USER_BASE}
+      - LDAP_ROLE_BASE=${LDAP_ROLE_BASE}
+    networks:
+      ldap_net:
+        ipv4_address: 172.28.1.13
+    logging:
+      driver: "${LOG_DRIVER}"
+      options:
+        max-size: "${LOG_MAX_SIZE}"
+        max-file: "${LOG_MAX_FILES}"
   phpldapadmin:
     # Maintained leenooks fork (Laravel rewrite) of phpLDAPadmin; serves HTTP
     # on 8080 (the old osixia image terminated TLS on 443 itself).

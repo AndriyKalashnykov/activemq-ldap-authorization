@@ -5,7 +5,7 @@
 
 # ActiveMQ LDAP Authentication and Authorization
 
-Reference demo of delegating **Apache ActiveMQ 6.2.6** authentication and per-destination authorization to LDAP instead of a local user file. The **runtime surface** swaps between three directory backends — OpenLDAP, Apache DS (Microsoft AD mimic), and Samba AD — drives the broker's JAAS `LDAPLoginModule` and `cachedLDAPAuthorizationMap` from env-templated config, and secures the Jetty web console; the **delivery surface** adds a `bats` unit suite for the templating logic, an asserting Docker-Compose e2e (the full authN/authZ matrix), and a GitHub Actions pipeline that builds the three Dockerfiles with a blocking Trivy CVE scan, on Renovate-managed pins.
+Reference demo of delegating **Apache ActiveMQ 6.2.6** authentication and per-destination authorization to LDAP instead of a local user file. The **runtime surface** swaps between three directory backends — OpenLDAP, Apache DS (Microsoft AD mimic), and Samba AD — drives the broker's JAAS `LDAPLoginModule` and `cachedLDAPAuthorizationMap` from env-templated config, and secures the Jetty web console; the **delivery surface** adds a `bats` unit suite for the templating logic, an asserting Docker-Compose e2e (the full authN/authZ matrix), and a GitHub Actions pipeline that builds the four Dockerfiles with a blocking Trivy CVE scan, on Renovate-managed pins.
 
 ```mermaid
 C4Context
@@ -46,6 +46,7 @@ C4Context
 | Message broker | Apache ActiveMQ 6.2.6 (`andriykalashnykov/docker-activemq:6.2.6`) |
 | Broker runtime | `eclipse-temurin:25-jre` (Java 25 LTS) |
 | Web console auth | Jetty 11.0.26 (bundled with the broker, incl. `jetty-jaas`); JAAS delegated to ActiveMQ's `LDAPLoginModule` |
+| Management console | hawtio 5.2.0 on Tomcat 11 / Java 25 (`hawtio/Dockerfile`); LDAP-secured via the **same** `LDAPLogin` realm |
 | Directory (default) | OpenLDAP — Symas-built (`openldap/Dockerfile`, slapd 2.6.x) |
 | Directory (AD mimic) | Apache DS — `andriykalashnykov/apacheds-ad` |
 | Directory (AD) | Samba AD domain controller — `ubuntu:26.04` base |
@@ -94,7 +95,8 @@ The [C4 context diagram](#activemq-ldap-authentication-and-authorization) above 
 
 | Console | URL | Credentials |
 |---------|-----|-------------|
-| ActiveMQ admin | http://127.0.0.1:8161/admin/ | login `admin` / password `admin` |
+| ActiveMQ admin | http://127.0.0.1:8161/admin/ | login `admin` / password `admin` (LDAP) |
+| hawtio | http://localhost:8090/hawtio/ | login `admin` / password `admin` (LDAP); then **Connect** → `http://activemq:8161/api/jolokia` to manage the broker |
 | phpLDAPadmin | http://localhost:6443/ | Login DN `cn=admin,dc=activemq,dc=apache,dc=org` / password `admin` |
 
 > The `admin`/`admin` and `user`/`admin` credentials are intentional demo values (the LDIFs store `{SHA}` hashes of `admin`), not secrets.
@@ -163,7 +165,7 @@ GitHub Actions ([`CI`](.github/workflows/docker-image.yml)) runs on every push a
 
 | Job | What it does |
 |-----|--------------|
-| `build` | Matrix-builds the three Dockerfiles (`6.2.6/`, `samba/`, `openldap/`), each followed by a blocking Trivy CVE scan |
+| `build` | Matrix-builds the four Dockerfiles (`6.2.6/`, `samba/`, `openldap/`, `hawtio/`), each followed by a blocking Trivy CVE scan |
 | `test` | `bats` unit tests for the config-templating logic |
 | `e2e` | Builds the broker image, composes the OpenLDAP + ActiveMQ stack, and asserts the LDAP authN/authZ matrix |
 | `e2e-samba` | Provisions the Samba AD domain controller and asserts it serves the AD directory over LDAP (`--privileged`) |

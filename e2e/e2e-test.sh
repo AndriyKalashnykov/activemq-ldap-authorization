@@ -27,6 +27,8 @@ ACTIVEMQ_CONTAINER="${ACTIVEMQ_CONTAINER:-activemq}"
 OPENLDAP_CONTAINER="${OPENLDAP_CONTAINER:-openldap}"
 CONSOLE_HOST="${ACTIVEMQ_CONSOLE_HOST:-localhost}"
 CONSOLE_PORT="${ACTIVEMQ_CONSOLE_PORT:-8161}"
+HAWTIO_HOST="${HAWTIO_CONSOLE_HOST:-localhost}"
+HAWTIO_PORT="${HAWTIO_HOST_PORT:-8090}"
 ADMIN_USER="${LDAP_ADMIN_USER:-admin}"
 ADMIN_PW="${LDAP_ADMIN_PASSWORD:-admin}"
 DEMO_USER="${DEMO_USER:-user}"
@@ -76,6 +78,30 @@ login_code=$(curl -s -o /dev/null -w '%{http_code}' -u "${ADMIN_USER}:${ADMIN_PW
 bad_code=$(curl -s -o /dev/null -w '%{http_code}' -u "${ADMIN_USER}:wrong_${RANDOM}" "http://${CONSOLE_HOST}:${CONSOLE_PORT}/admin/" 2>/dev/null || true)
 [ "$bad_code" = "401" ] && pass "console login with bad password -> 401" \
                         || fail "console login with bad password -> ${bad_code} (expected 401)"
+
+echo "== hawtio console login (hawtio JAAS -> same LDAPLogin realm) =="
+# hawtio reuses the broker's LDAPLogin realm; its auth endpoint returns 200 on a
+# valid LDAP login (admin is in the admins role) and 403 on a bad password.
+hawtio_base="http://${HAWTIO_HOST}:${HAWTIO_PORT}/hawtio"
+hawtio_ready=
+for _ in $(seq 1 $(( READY_TIMEOUT / POLL ))); do
+  hc="$(curl -s -o /dev/null -w '%{http_code}' "${hawtio_base}/" 2>/dev/null || true)"
+  if [ -n "$hc" ] && [ "$hc" != "000" ]; then hawtio_ready=1; break; fi
+  sleep "$POLL"
+done
+if [ -n "$hawtio_ready" ]; then
+  pass "hawtio console responding on :${HAWTIO_PORT} (HTTP ${hc})"
+else
+  fail "hawtio console not reachable within ${READY_TIMEOUT}s"
+fi
+hawtio_ok=$(curl -s -o /dev/null -w '%{http_code}' -X POST "${hawtio_base}/auth/login" \
+  -H 'Content-Type: application/json' -d "{\"username\":\"${ADMIN_USER}\",\"password\":\"${ADMIN_PW}\"}" 2>/dev/null || true)
+[ "$hawtio_ok" = "200" ] && pass "hawtio login admin/admin -> 200 (LDAP authN + admins role)" \
+                         || fail "hawtio login admin/admin -> ${hawtio_ok} (expected 200)"
+hawtio_bad=$(curl -s -o /dev/null -w '%{http_code}' -X POST "${hawtio_base}/auth/login" \
+  -H 'Content-Type: application/json' -d "{\"username\":\"${ADMIN_USER}\",\"password\":\"wrong_${RANDOM}\"}" 2>/dev/null || true)
+[ "$hawtio_bad" = "403" ] && pass "hawtio login with bad password -> 403" \
+                          || fail "hawtio login with bad password -> ${hawtio_bad} (expected 403)"
 
 echo "== config templating resolved (no leftover placeholders) =="
 for f in activemq.xml login.config; do
