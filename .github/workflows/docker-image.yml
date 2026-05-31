@@ -35,6 +35,10 @@ jobs:
             dockerfile: ./openldap/Dockerfile
             image: activemq-openldap:scan
             scan: true
+          - context: ./hawtio
+            dockerfile: ./hawtio/Dockerfile
+            image: activemq-hawtio:scan
+            scan: true
 
     steps:
     - name: Checkout

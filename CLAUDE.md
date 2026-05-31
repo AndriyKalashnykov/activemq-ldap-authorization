@@ -35,12 +35,13 @@ Demo credentials throughout are `admin`/`admin` and `user`/`admin` (passwords ar
 - `apacheds-ad/` — Apache DS backend stack (image `andriykalashnykov/apacheds-ad`, LDAP on host port `10389`). `ldif/users.ldif` adds Microsoft `sAMAccountName`/`memberOf` schema to mimic AD.
 - `openldap/` — standalone OpenLDAP compose + seed LDIF, used by `scripts/start-openldap.sh`.
 - `samba/` — Samba-as-AD domain controller (`ubuntu:26.04` `Dockerfile` + provisioning scripts), an alternative to Apache DS. The scripts (`samba-ad-setup.sh`/`samba-ad-run.sh`) are **bind-mounted** at runtime into `/opt/ad-scripts`, not baked into the image.
+- `hawtio/` — standalone hawtio management console (`Dockerfile` = Tomcat 11 + hawtio 5.x WAR on Java 25; `docker-entrypoint.sh` templates `login.config`). LDAP-secured via the **same** `LDAPLogin` realm as the broker (`activemq-jaas` + `slf4j-api` jars added to Tomcat's classpath for `LDAPLoginModule`+`GroupPrincipal`). Connects to the broker's LDAP-secured Jolokia (`/api/jolokia`) via hawtio's Connect tab. A service in the primary compose (host port 8090).
 - `scripts/` — operational helpers (see below); `scripts/lib.sh` holds the sourceable, unit-tested config-templating functions.
 - `tests/templating.bats` — `bats` unit tests for `scripts/lib.sh` (the env→config substitution logic). Run via `make test`.
 - `e2e/e2e-test.sh` — asserting end-to-end test of the LDAP authN/authZ contract against the composed stack. Run via `make e2e`.
 - `e2e/e2e-samba.sh` — asserting e2e for the Samba AD DC: provisions the DC (`--privileged`), then asserts LDAP/LDAPS/Kerberos/GC ports listen, the domain is provisioned, and an authenticated LDAPS search returns the Administrator entry. Run via `make e2e-samba`.
 - `.env.example` — committed source-of-truth defaults (LDAP/broker hosts, ports, demo creds, Samba realm/admin-password, e2e tunables); sourced by both e2e scripts.
-- `.github/workflows/docker-image.yml` — CI (`name: CI`): matrix-builds the three Dockerfiles (`6.2.6/`, `samba/`, `openldap/`) + **blocking** Trivy scan (`exit-code: '1'`; samba/openldap clean, broker waives one residual in `.trivyignore`), `test` (bats + mermaid-lint), `e2e` (compose authZ contract), and `e2e-samba` (Samba AD DC serves LDAP) jobs.
+- `.github/workflows/docker-image.yml` — CI (`name: CI`): matrix-builds the four Dockerfiles (`6.2.6/`, `samba/`, `openldap/`, `hawtio/`) + **blocking** Trivy scan (`exit-code: '1'`; samba/openldap/hawtio clean, broker waives one residual in `.trivyignore`), `test` (bats + mermaid-lint), `e2e` (compose authZ contract + broker & hawtio LDAP login), and `e2e-samba` (Samba AD DC serves LDAP) jobs.
 - `.trivyignore` — one documented waiver: `jetty-http` CVE-2026-2332 (ActiveMQ 6.2.6 bundles Jetty 11.0.26; the fix is Jetty 12 only — a future ActiveMQ line). The 4 Spring CVEs 5.19.6 carried were cleared by the 6.2.6 migration, so they are NOT waived.
 
 ## Common Commands
