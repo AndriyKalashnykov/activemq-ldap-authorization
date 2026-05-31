@@ -12,7 +12,10 @@ ENV ACTIVEMQ=apache-activemq-$ACTIVEMQ_VER
 ENV ACTIVEMQ_TCP=61616 ACTIVEMQ_AMQP=5672 ACTIVEMQ_STOMP=61613 ACTIVEMQ_MQTT=1883 ACTIVEMQ_WS=61614 ACTIVEMQ_UI=8161
 ENV SHA512_VAL=cdf98fd42501bda694dbcee85bfaf33d8548091402f9cb2e768bc2e0b0905972022caea10deacb6db2e04d2d461b683269186c07bd5327333bc0d50956b66b48
 
-RUN apt-get update && apt-get upgrade --yes && apt-get install --yes --no-install-recommends openssl lsof net-tools nmap && apt-get clean autoclean && apt-get autoremove --yes && rm -rf /var/lib/{apt,dpkg,cache,log}/
+# curl is installed explicitly: the eclipse-temurin:25 base (Ubuntu 24.04)
+# dropped curl from the image, unlike the older :11-jre (Jammy) base that
+# shipped it. The ActiveMQ tarball + Jetty jars below are fetched with curl.
+RUN apt-get update && apt-get upgrade --yes && apt-get install --yes --no-install-recommends curl openssl lsof net-tools nmap && apt-get clean autoclean && apt-get autoremove --yes && rm -rf /var/lib/{apt,dpkg,cache,log}/
 
 ENV ACTIVEMQ_HOME=/opt/activemq
 

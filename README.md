@@ -44,7 +44,7 @@ C4Context
 | Component | Technology |
 |-----------|------------|
 | Message broker | Apache ActiveMQ 5.19.6 (`andriykalashnykov/docker-activemq:5.19.6`) |
-| Broker runtime | `eclipse-temurin:11-jre` (Java 11) |
+| Broker runtime | `eclipse-temurin:25-jre` (Java 25 LTS) |
 | Web console auth | Jetty 9.4.58 (`jetty-jaas`, `jetty-security`, `jetty-util`); JAAS delegated to ActiveMQ's `LDAPLoginModule` |
 | Directory (default) | OpenLDAP — `osixia/openldap:1.5.0` |
 | Directory (AD mimic) | Apache DS — `andriykalashnykov/apacheds-ad` |
