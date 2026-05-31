@@ -1,0 +1,7 @@
+# Gate builds on real Dockerfile errors (e.g. DL3020 ADD-vs-COPY); report
+# warnings/info as advisories. DL3008 ("pin apt versions") is intentionally
+# advisory-only: the base images are tag-pinned and Renovate-tracked, so
+# pinning apt package versions would break builds on every base refresh.
+# Coherent apt-pinning also requires digest-pinning the base — a
+# /harden-image-pipeline concern, out of scope for this repo today.
+failure-threshold: error

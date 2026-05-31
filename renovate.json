@@ -1,0 +1,45 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard"
+  ],
+  "labels": ["dependencies"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Jetty jars pinned in the ActiveMQ Dockerfile and scripts/set-env.sh",
+      "managerFilePatterns": [
+        "/(^|/)Dockerfile$/",
+        "/(^|/)set-env\\.sh$/"
+      ],
+      "matchStrings": [
+        "JETTY_VER\\s*[=:]\\s*\"?(?<currentValue>[0-9][^\"\\s]+)\"?"
+      ],
+      "depNameTemplate": "org.eclipse.jetty:jetty-util",
+      "datasourceTemplate": "maven"
+    },
+    {
+      "customType": "regex",
+      "description": "ldaptive jar pinned in the ActiveMQ Dockerfile and scripts/set-env.sh",
+      "managerFilePatterns": [
+        "/(^|/)Dockerfile$/",
+        "/(^|/)set-env\\.sh$/"
+      ],
+      "matchStrings": [
+        "LDAPTIVE_VER\\s*[=:]\\s*\"?(?<currentValue>[0-9][^\"\\s]+)\"?"
+      ],
+      "depNameTemplate": "org.ldaptive:ldaptive",
+      "datasourceTemplate": "maven"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "ActiveMQ 5.16.1 requires Jetty 9.4.x; major Jetty bumps (10/11/12) are a manual migration tracked in CLAUDE.md",
+      "matchDatasources": ["maven"],
+      "matchPackageNames": ["org.eclipse.jetty:jetty-util"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ]
+}

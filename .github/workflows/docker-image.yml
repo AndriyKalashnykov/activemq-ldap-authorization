@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: CI
 
 on:
   push:
@@ -19,7 +19,40 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - context: ./5.16.1
+            dockerfile: ./5.16.1/Dockerfile
+            image: activemq-ldap:scan
+            scan: true
+          - context: ./samba
+            dockerfile: ./samba/Dockerfile
+            image: samba-ad:scan
+            scan: true
+
     steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-    - name: Build the Docker image
-      run: docker build ./5.16.1 --file ./5.16.1/Dockerfile --tag my-image-name:$(date +%s)
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+    - name: Build image
+      uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+      with:
+        context: ${{ matrix.context }}
+        file: ${{ matrix.dockerfile }}
+        load: true
+        tags: ${{ matrix.image }}
+
+    - name: Trivy image scan
+      if: ${{ matrix.scan }}
+      uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+      with:
+        image-ref: ${{ matrix.image }}
+        severity: CRITICAL,HIGH
+        ignore-unfixed: true
+        # Report-only: the base (EOL JDK 8) and pinned ActiveMQ/Jetty/ldaptive
+        # carry known CVEs tracked in CLAUDE.md's upgrade backlog. Flip to '1'
+        # once those upgrades land so the scan becomes a blocking gate.
+        exit-code: '0'
+        vuln-type: os,library
