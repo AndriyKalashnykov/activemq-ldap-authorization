@@ -80,5 +80,9 @@ cat $LOGIN_CONF_FILE
 echo "###################################### login.config ######################################"
 cat $ACTIVEMQ_CONF_FILE
 
-# $ACTIVEMQ_BASE/bin/activemq console
-$ACTIVEMQ_BASE/bin/activemq start && tail -f /opt/activemq/data/activemq.log
+# Run the broker in the FOREGROUND (the canonical container pattern — the same
+# `activemq console` the official apache/activemq-classic image uses as its CMD).
+# `exec` replaces this shell so the broker is the container's main process and
+# logs straight to stdout via Log4j2's Console appender (visible in `docker logs`),
+# rather than daemonizing with `activemq start` and tailing the log file.
+exec "$ACTIVEMQ_BASE/bin/activemq" console
