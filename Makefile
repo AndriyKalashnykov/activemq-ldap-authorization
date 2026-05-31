@@ -20,7 +20,7 @@ TRIVY_SEVERITY   ?= CRITICAL,HIGH
 ACTIVEMQ_IMAGE := $(if $(DOCKER_LOGIN),$(DOCKER_LOGIN)/,)$(IMAGE_NAME):$(ACTIVEMQ_VER)
 SAMBA_DOCKERFILE := samba/Dockerfile
 
-.PHONY: help deps lint build build-samba scan push up down logs test \
+.PHONY: help deps lint build build-samba scan push up down logs test e2e \
         search-openldap search-apacheds clean ci renovate-validate
 
 help: ## Show this help
@@ -58,8 +58,12 @@ down: ## Stop the stack and remove its containers
 logs: ## Tail the stack logs
 	docker compose -f $(COMPOSE_FILE) logs -f
 
-test: ## Run authorization smoke tests (produce as admin/user to allowed & denied destinations)
-	./scripts/test-activemq.sh
+test: ## Run bats unit tests (config-templating logic in scripts/lib.sh)
+	@if command -v bats >/dev/null 2>&1; then bats tests/; else npx --yes bats tests/; fi
+
+e2e: ## Bring up the stack, assert the LDAP authN/authZ contract, tear down
+	@LDAP_REFRESH_INTERVAL=15000 docker compose -f $(COMPOSE_FILE) up -d
+	@./e2e/e2e-test.sh; rc=$$?; docker compose -f $(COMPOSE_FILE) down -v; exit $$rc
 
 search-openldap: ## ldapsearch against the running OpenLDAP backend
 	./scripts/search-openldap.sh
@@ -73,4 +77,4 @@ clean: ## Remove the locally built broker image
 renovate-validate: ## Validate renovate.json against the Renovate schema
 	npx --yes --package renovate -- renovate-config-validator
 
-ci: lint build scan ## Local CI pipeline: lint, build, scan
+ci: lint test build scan ## Local CI pipeline: lint, bats unit tests, build, scan

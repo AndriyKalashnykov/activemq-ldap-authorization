@@ -88,12 +88,20 @@ For Apache DS, log in to phpLDAPadmin with DN `cn=mqbroker,ou=Services,ou=Active
 ## Verifying authentication & authorization
 
 ```bash
-make search-openldap     # ldapwhoami + ldapsearch against OpenLDAP (port 389)
-make search-apacheds     # same against Apache DS (port 10389)
-make test                # produce messages as admin/user to allowed & denied destinations
+make test                # bats unit tests for the init.sh config-templating logic
+make e2e                 # bring up the stack, assert the LDAP authN/authZ contract, tear down
+make search-openldap     # manual: ldapwhoami + ldapsearch against OpenLDAP (port 389)
+make search-apacheds     # manual: same against Apache DS (port 10389)
 ```
 
-`make test` ([`scripts/test-activemq.sh`](scripts/test-activemq.sh)) is the authorization smoke test: it runs the broker's CLI producer as different users against destinations they should and should not be able to write to, exercising the `cachedLDAPAuthorizationMap` rules.
+`make e2e` ([`e2e/e2e-test.sh`](e2e/e2e-test.sh)) is the asserting end-to-end test. It composes the OpenLDAP + ActiveMQ stack and verifies, with pass/fail assertions:
+
+- the broker boots and config templating fully resolved (no leftover `##### … #####` placeholders);
+- authentication rejects invalid credentials;
+- the **authorization matrix** is enforced — `admin` may write `ADMINS.*`, `user` may write `USERS.*`, and `user` is **denied** `ADMINS.*` — exercising the `cachedLDAPAuthorizationMap` rules;
+- the LDAP seed (users, groups, memberships) is present.
+
+> The harness waits for the `cachedLDAPAuthorizationMap` to warm up before asserting: immediately after startup the cache is cold (OpenLDAP may still be importing the LDIF) and every producer is transiently denied on the advisory topic. `make e2e` sets a short `LDAP_REFRESH_INTERVAL` so warm-up is fast and deterministic.
 
 ## Make targets
 
@@ -105,8 +113,9 @@ make test                # produce messages as admin/user to allowed & denied de
 | `make scan` | Trivy CVE scan of the built broker image |
 | `make push` | Push the broker image (needs `DOCKER_LOGIN` + `DOCKER_PWD` in env) |
 | `make up` / `make down` / `make logs` | Manage the default Compose stack |
-| `make test` | Authorization smoke tests |
-| `make ci` | Local pipeline: lint + build + scan |
+| `make test` | Unit tests (bats — config templating) |
+| `make e2e` | Bring up stack + assert the LDAP authN/authZ contract |
+| `make ci` | Local pipeline: lint + test + build + scan |
 
 ## Configuration
 
