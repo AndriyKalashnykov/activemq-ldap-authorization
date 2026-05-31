@@ -93,7 +93,7 @@ This is exactly what the `docker-image.yml` workflow runs.
 - **Version pins live in two places**: `scripts/set-env.sh` (for scripts) and `5.16.1/Dockerfile` + `5.16.1/.env` (for the image/compose). The `Dockerfile` also pins a `SHA512_VAL` checksum for the ActiveMQ tarball — bumping `ACTIVEMQ_VER` requires updating that hash or the build fails the checksum gate.
 - **Jetty (9.4.35) and ldaptive (1.2.4) jars** are curl'd from Maven Central at image-build time into the broker's `lib/` (see `Dockerfile` lines 36–39) — they are not part of the stock ActiveMQ distribution and are needed for the JAAS/LDAP web-console auth.
 - The base image is `eclipse-temurin:8-jre` — ActiveMQ 5.16.1 requires Java 8.
-- The improvement backlog (upgrades for ActiveMQ, Jetty, ldaptive, the LDAP admin images, and JDK) is tracked below.
+- The [Upgrade Backlog](#upgrade-backlog) below tracks the deferred upgrades (ActiveMQ + the CVE driver, Jetty, ldaptive, the LDAP admin images, JDK).
 
 ## Skills
 
@@ -108,12 +108,16 @@ Use the following skills when working on related files:
 
 When spawning subagents, always pass conventions from the respective skill into the agent's prompt.
 
-## Improvement Backlog
+## Upgrade Backlog
 
-- [ ] Upgrade ActiveMQ from 5.16.1 to latest 5.x or 6.x (major migration)
-- [ ] Upgrade Jetty libraries from 9.4.35 to latest 9.4.x or 10.x+
-- [ ] Upgrade ldaptive from 1.2.4 to latest 2.x (major migration)
-- [ ] Replace osixia/openldap:1.5.0 with a maintained alternative (bitnami/openldap or similar)
-- [ ] Replace osixia/phpldapadmin:0.9.0 with a maintained alternative
-- [ ] Replace ldapaccountmanager/lam:7.4 with latest version
-- [ ] Upgrade eclipse-temurin base from JDK 8 to JDK 11+ when ActiveMQ supports it
+_Last analyzed 2026-05-30 (`/upgrade-analysis`). ActiveMQ is intentionally **not** Renovate-tracked — bumping it requires updating `SHA512_VAL` in `5.16.1/Dockerfile` for the new tarball. Jetty/ldaptive (Maven) + the Docker images + Actions ARE Renovate-managed._
+
+- [ ] **🔴 SECURITY: upgrade ActiveMQ off 5.16.1 — vulnerable to CVE-2023-46604 (OpenWire RCE, CVSS 10.0, actively exploited).** Minimal fix: **5.16.7** (stays on Java 8, drop-in apart from `SHA512_VAL`). Better: **5.19.6** (latest 5.x, needs Java 11+) or **6.2.5** (latest 6.x, needs Java 17+). Also clears CVE-2024-32114 (web-console default auth). Bumping ActiveMQ couples to the Jetty/ldaptive overlay jars + the JDK base — treat as one change.
+- [ ] Upgrade Jetty overlay jars from 9.4.35.v20201120 → 9.4.57.v20241219 (last 9.4.x; multiple CVEs since 9.4.35). Align to whatever Jetty the chosen ActiveMQ release bundles rather than pinning independently. Renovate proposes 9.4.x; major (10/11/12) is disabled in `renovate.json`.
+- [ ] Upgrade ldaptive 1.2.4 → 2.4.1 (API-breaking major; do it with the ActiveMQ upgrade). Renovate opens the PR via the Maven custom manager.
+- [ ] Reconsider the **Jetty/ldaptive overlay-jar pattern** — it couples three independently-pinned versions to ActiveMQ internals. Prefer the broker's bundled Jetty + only overlay ldaptive.
+- [ ] Replace `osixia/openldap:1.5.0` (no release since 2021-02, ~5 yrs) with a maintained alternative (e.g. `bitnami/openldap`). Renovate is a no-op here — no newer tag exists; this is a replacement.
+- [ ] Replace `osixia/phpldapadmin:0.9.0` (last code commit 2019-09, ~6.5 yrs, effectively abandoned) with a maintained alternative.
+- [ ] Resolve `ldapaccountmanager/lam` (pinned 7.4, latest 9.5.2): referenced only via `LAM_*` vars in `5.16.1/.env` with **no LAM service in any active compose file** — likely vestigial. Delete the dead config, or wire + upgrade it.
+- [ ] Upgrade `eclipse-temurin:8-jre` → JDK 11+/17 — tied to the ActiveMQ upgrade (5.17+ needs Java 11, 6.x needs Java 17). Java 8 is the floor forcing the old broker.
+- [ ] Once ActiveMQ + Jetty are current, flip the CI Trivy scan `exit-code` from `'0'` (report-only) to `'1'` so it becomes a blocking gate (`.github/workflows/docker-image.yml`).
