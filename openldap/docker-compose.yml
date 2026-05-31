@@ -25,7 +25,8 @@ services:
         max-size: "100M"
         max-file: "5"
   ldap-account-manager:
-    image: ldapaccountmanager/lam:7.4
+    # Maintained LAM image moved from Docker Hub (frozen at 8.3, 2023) to GHCR.
+    image: ghcr.io/ldapaccountmanager/lam:9.5
     restart: unless-stopped
     hostname: lam
     container_name: lam    
@@ -46,20 +47,19 @@ services:
       ldap_net:
         ipv4_address: 172.28.1.11      
   phpldapadmin:
-    image: osixia/phpldapadmin:0.9.0
+    # Maintained leenooks fork (Laravel rewrite); serves HTTP on 8080.
+    image: phpldapadmin/phpldapadmin:2.3.11
     hostname: phpldapadmin
     container_name: phpldapadmin
     depends_on:
       - openldap
     ports:
-      - "6543:443"
-      # - "8180:80"      
+      - "6543:8080"
     environment:
-      - PHPLDAPADMIN_LDAP_HOSTS=openldap
-      # - PHPLDAPADMIN_HTTPS=false
+      - LDAP_HOST=ldap://openldap:389
     networks:
       ldap_net:
-        ipv4_address: 172.28.1.12           
+        ipv4_address: 172.28.1.12
 networks:
   ldap_net:
     ipam:

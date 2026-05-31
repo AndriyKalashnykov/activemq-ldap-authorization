@@ -18,40 +18,24 @@ services:
         max-size: "${LOG_MAX_SIZE}"
         max-file: "${LOG_MAX_FILES}"
   phpldapadmin:
-    image: osixia/phpldapadmin:0.9.0
+    # Maintained leenooks fork (Laravel rewrite); serves HTTP on 8080.
+    image: phpldapadmin/phpldapadmin:2.3.11
     hostname: ${PHPLDAPADMIN_SERVER_HOST}
     container_name: ${PHPLDAPADMIN_SERVER_HOST}
     depends_on:
       - ${LDAP_SERVER_HOST}
     ports:
-      - "6443:${PHPLDAPADMIN_SERVER_PORT}"
+      - "${PHPLDAPADMIN_HOST_PORT:-6443}:8080"
     environment:
-      PHPLDAPADMIN_LDAP_HOSTS: "#PYTHON2BASH:[
-        {'${LDAP_SERVER_HOST}':[
-          {'server': [
-            {'tls': ${LDAP_SERVER_TLS}},
-            {'port': ${LDAP_SERVER_PORT}},
-            {'base': \"array('${LDAP_BASE_DN}')\"}
-          ]
-          },
-          {'login': [
-            {'bind_id': '${LDAP_USER}'},
-            {'bind_id': '${LDAP_USER}'},
-            {'auth_type': 'session'}
-          ]
-          }
-        ]
-        }
-        ]"
+      - LDAP_HOST=ldap://${LDAP_SERVER_HOST}:${LDAP_SERVER_PORT}
     networks:
       ldap_net:
-        ipv4_address: ${IPV4_ADDRESS_PREFIX}.2.11  
+        ipv4_address: ${IPV4_ADDRESS_PREFIX}.2.11
     logging:
       driver: "${LOG_DRIVER}"
       options:
         max-size: "${LOG_MAX_SIZE}"
-        max-file: "${LOG_MAX_FILES}"          
-    command: "--loglevel debug --copy-service"                       
+        max-file: "${LOG_MAX_FILES}"
 networks:
   ldap_net:
     ipam:
