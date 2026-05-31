@@ -7,6 +7,23 @@
 
 Reference demo of delegating **Apache ActiveMQ 5.19.6** authentication and per-destination authorization to LDAP instead of a local user file. The **runtime surface** swaps between three directory backends — OpenLDAP, Apache DS (Microsoft AD mimic), and Samba AD — drives the broker's JAAS `LDAPLoginModule` and `cachedLDAPAuthorizationMap` from env-templated config, and secures the Jetty web console; the **delivery surface** adds a `bats` unit suite for the templating logic, an asserting Docker-Compose e2e (the full authN/authZ matrix), and a GitHub Actions pipeline that builds both Dockerfiles with a Trivy CVE scan, on Renovate-managed pins.
 
+```mermaid
+C4Context
+    title ActiveMQ LDAP Authentication and Authorization
+
+    Person(client, "Messaging client", "Produces/consumes over OpenWire, AMQP, STOMP, MQTT")
+    Person(operator, "Operator", "Browses and manages the directory")
+
+    System(amq, "ActiveMQ Broker", "JAAS LDAPLoginModule (authN) + cachedLDAPAuthorizationMap (authZ); secured Jetty console")
+    System_Ext(ldap, "LDAP Directory", "OpenLDAP / Apache DS / Samba AD: users, groups, per-destination ACLs")
+    System_Ext(ui, "phpLDAPadmin / LAM", "LDAP web admin UI")
+
+    Rel(client, amq, "Connect, produce/consume", "authenticated")
+    Rel(amq, ldap, "Bind + authorize", "LDAP/LDAPS")
+    Rel(operator, ui, "Manage entries", "HTTPS")
+    Rel(ui, ldap, "Read/write", "LDAP")
+```
+
 ## Table of Contents
 
 - [Tech Stack](#tech-stack)
@@ -63,9 +80,7 @@ Then open the [web consoles](#web-consoles). Stop everything with `make down`.
 
 ## Architecture
 
-<p align="center"><img src="images/ldap-auth-001.jpg" width="720" alt="ActiveMQ LDAP authentication and authorization overview"></p>
-
-All backends serve the same base DN `dc=activemq,dc=apache,dc=org`:
+The [C4 context diagram](#activemq-ldap-authentication-and-authorization) above shows the system boundary. All backends serve the same base DN `dc=activemq,dc=apache,dc=org`:
 
 | Entry | Purpose |
 |-------|---------|
