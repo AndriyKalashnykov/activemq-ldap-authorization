@@ -45,7 +45,7 @@ C4Context
 |-----------|------------|
 | Message broker | Apache ActiveMQ 5.19.6 (`andriykalashnykov/docker-activemq:5.19.6`) |
 | Broker runtime | `eclipse-temurin:11-jre` (Java 11) |
-| Web console auth | Jetty 9.4.58 (`jetty-jaas`, `jetty-security`, `jetty-util`) + ldaptive 1.3.3 |
+| Web console auth | Jetty 9.4.58 (`jetty-jaas`, `jetty-security`, `jetty-util`) + ldaptive 2.5.0 |
 | Directory (default) | OpenLDAP — `osixia/openldap:1.5.0` |
 | Directory (AD mimic) | Apache DS — `andriykalashnykov/apacheds-ad` |
 | Directory (AD) | Samba AD domain controller — `ubuntu:24.04` base |
