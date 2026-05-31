@@ -53,7 +53,7 @@ make up                               # docker compose -f 5.16.1/docker-compose.
 # equivalently: cd 5.16.1 && docker compose up
 ```
 - ActiveMQ web console: http://127.0.0.1:8161/admin/ (login `admin`/`admin`)
-- phpLDAPadmin: https://localhost:6443/ (Login DN `cn=admin,dc=activemq,dc=apache,dc=org`, password `admin`)
+- phpLDAPadmin: http://localhost:6443/ (Login DN `cn=admin,dc=activemq,dc=apache,dc=org`, password `admin`) — maintained leenooks v2, serves HTTP on :8080
 - Broker ports: openwire 61616, AMQP 5672, STOMP 61613, MQTT 1883, WS 61614.
 
 ### Apache DS backend instead of OpenLDAP
@@ -116,8 +116,8 @@ _Last analyzed 2026-05-30 (`/upgrade-analysis`). ActiveMQ is intentionally **not
 - [ ] Upgrade Jetty overlay jars from 9.4.35.v20201120 → 9.4.57.v20241219 (last 9.4.x; multiple CVEs since 9.4.35). Align to whatever Jetty the chosen ActiveMQ release bundles rather than pinning independently. Renovate proposes 9.4.x; major (10/11/12) is disabled in `renovate.json`.
 - [ ] Upgrade ldaptive 1.2.4 → 2.4.1 (API-breaking major; do it with the ActiveMQ upgrade). Renovate opens the PR via the Maven custom manager.
 - [ ] Reconsider the **Jetty/ldaptive overlay-jar pattern** — it couples three independently-pinned versions to ActiveMQ internals. Prefer the broker's bundled Jetty + only overlay ldaptive.
-- [ ] Replace `osixia/openldap:1.5.0` (no release since 2021-02, ~5 yrs) with a maintained alternative (e.g. `bitnami/openldap`). Renovate is a no-op here — no newer tag exists; this is a replacement.
-- [ ] Replace `osixia/phpldapadmin:0.9.0` (last code commit 2019-09, ~6.5 yrs, effectively abandoned) with a maintained alternative.
-- [ ] Resolve `ldapaccountmanager/lam` (pinned 7.4, latest 9.5.2): referenced only via `LAM_*` vars in `5.16.1/.env` with **no LAM service in any active compose file** — likely vestigial. Delete the dead config, or wire + upgrade it.
+- [ ] **OpenLDAP stays on `osixia/openldap:1.5.0` — no clean maintained drop-in exists (deep-researched 2026-05-31).** The demo's authz tree deliberately reuses non-unique `cn=admin`/`cn=read`/`cn=write` permission groups under every destination, which **requires a bare `slapd`** — every modern *curated* image rejects it. Verdicts: `symas/openldap` not published on Docker Hub (404); `bitnami`/`bitnamilegacy` dead/frozen (Broadcom Aug 2025); `nfrastack`/tiredofit halts on sudo-init fragility (host + CI risk); `vegardit/openldap` (maintained) enforces a `unique` cn overlay → 22 constraint violations; `lldap`/`glauth` can't model the schema; `389ds` is a different server (major migration). Revisit if Symas publishes a Docker Hub image, or build from `Symas/containers` as a dedicated task.
+- [x] **DONE (2026-05-31): phpLDAPadmin `osixia/phpldapadmin:0.9.0` → `phpldapadmin/phpldapadmin:2.3.11`** (maintained leenooks v2) across all three compose files + `scripts/start-openldap.sh`. Console is now **HTTP on :8080** (mapped to host :6443/:6543), not the old built-in HTTPS:443.
+- [x] **DONE (2026-05-31): LAM upgraded `ldapaccountmanager/lam:7.4` → `ghcr.io/ldapaccountmanager/lam:9.5`** in the `openldap/` stack (Docker Hub image frozen at 8.3/2023; maintained image moved to GHCR). Vestigial `LAM_*` vars removed from `5.16.1/.env` (no LAM service there).
 - [ ] Upgrade `eclipse-temurin:8-jre` → JDK 11+/17 — tied to the ActiveMQ upgrade (5.17+ needs Java 11, 6.x needs Java 17). Java 8 is the floor forcing the old broker.
 - [ ] Once ActiveMQ + Jetty are current, flip the CI Trivy scan `exit-code` from `'0'` (report-only) to `'1'` so it becomes a blocking gate (`.github/workflows/docker-image.yml`).

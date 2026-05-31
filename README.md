@@ -63,7 +63,7 @@ Then open the [web consoles](#web-consoles). Stop everything with `make down`.
 | Console | URL | Credentials |
 |---------|-----|-------------|
 | ActiveMQ admin | http://127.0.0.1:8161/admin/ | login `admin` / password `admin` |
-| phpLDAPadmin | https://localhost:6443/ | Login DN `cn=admin,dc=activemq,dc=apache,dc=org` / password `admin` |
+| phpLDAPadmin | http://localhost:6443/ | Login DN `cn=admin,dc=activemq,dc=apache,dc=org` / password `admin` |
 
 > The `admin`/`admin` and `user`/`admin` credentials are intentional demo values (the LDIFs store `{SHA}` hashes of `admin`), not secrets.
 
@@ -134,7 +134,8 @@ Operator-tunable values live in two files (keep version pins in sync between the
 | Directory (default) | OpenLDAP — `osixia/openldap:1.5.0` |
 | Directory (AD mimic) | Apache DS — `andriykalashnykov/apacheds-ad` |
 | Directory (AD) | Samba AD domain controller — `ubuntu:24.04` base |
-| LDAP admin UI | phpLDAPadmin — `osixia/phpldapadmin:0.9.0` |
+| LDAP admin UI | phpLDAPadmin — `phpldapadmin/phpldapadmin:2.3.11` (maintained leenooks v2; HTTP on :8080) |
+| LDAP account manager | LAM — `ghcr.io/ldapaccountmanager/lam:9.5` (standalone `openldap/` stack) |
 | Orchestration | Docker Compose v2 |
 
 ## License
