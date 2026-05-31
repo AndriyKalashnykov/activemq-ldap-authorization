@@ -45,7 +45,7 @@ C4Context
 |-----------|------------|
 | Message broker | Apache ActiveMQ 5.19.6 (`andriykalashnykov/docker-activemq:5.19.6`) |
 | Broker runtime | `eclipse-temurin:11-jre` (Java 11) |
-| Web console auth | Jetty 9.4.58 (`jetty-jaas`, `jetty-security`, `jetty-util`) + ldaptive 1.3.3 |
+| Web console auth | Jetty 9.4.58 (`jetty-jaas`, `jetty-security`, `jetty-util`); JAAS delegated to ActiveMQ's `LDAPLoginModule` |
 | Directory (default) | OpenLDAP — `osixia/openldap:1.5.0` |
 | Directory (AD mimic) | Apache DS — `andriykalashnykov/apacheds-ad` |
 | Directory (AD) | Samba AD domain controller — `ubuntu:24.04` base |
@@ -59,6 +59,7 @@ ActiveMQ never owns its own user/role database. Two broker plugins, configured i
 
 - **Authentication** — `jaasAuthenticationPlugin` using the `LDAPLogin` realm defined in [`5.19.6/conf/login.config`](5.19.6/conf/login.config) (`org.apache.activemq.jaas.LDAPLoginModule`).
 - **Authorization** — `authorizationPlugin` with a `cachedLDAPAuthorizationMap` that reads queue/topic/temp permissions from LDAP group entries and refreshes them on an interval.
+- **Web console** — the Jetty admin console ([`5.19.6/conf/jetty.xml`](5.19.6/conf/jetty.xml)) authenticates against the **same** `LDAPLogin` realm via a `JAASLoginService`; LDAP group `cn`s map to the `users`/`admins` console roles. Both the broker and the console share one LDAP login module.
 
 The shipped `activemq.xml` and `login.config` are **templates**: they contain `##### PLACEHOLDER #####` tokens that the container entrypoint ([`5.19.6/init.sh`](5.19.6/init.sh)) rewrites from environment variables (`LDAP_HOST`, `LDAP_QUEUE_SEARCH_BASE`, …) at startup. To change the LDAP wiring, set the env vars — never hardcode values into the config files.
 
@@ -165,7 +166,7 @@ GitHub Actions ([`CI`](.github/workflows/docker-image.yml)) runs on every push a
 | `test` | `bats` unit tests for the config-templating logic |
 | `e2e` | Builds the broker image, composes the OpenLDAP + ActiveMQ stack, and asserts the LDAP authN/authZ matrix |
 
-The Trivy scan is **report-only** (`exit-code: 0`): the base image and ActiveMQ-bundled transitive deps carry CVEs tracked in [`CLAUDE.md`](CLAUDE.md)'s upgrade backlog. No repository secrets are required. Dependency pins (Jetty/ldaptive via Maven, the Docker images, and GitHub Actions) are kept current by [Renovate](https://docs.renovatebot.com/). A weekly [`Cleanup old workflow runs`](.github/workflows/cleanup-runs.yml) workflow prunes old runs and caches.
+The Trivy scan is **report-only** (`exit-code: 0`): the base image and ActiveMQ-bundled transitive deps carry CVEs tracked in [`CLAUDE.md`](CLAUDE.md)'s upgrade backlog. No repository secrets are required. Dependency pins (Jetty via Maven, the Docker images, and GitHub Actions) are kept current by [Renovate](https://docs.renovatebot.com/). A weekly [`Cleanup old workflow runs`](.github/workflows/cleanup-runs.yml) workflow prunes old runs and caches.
 
 ## License
 

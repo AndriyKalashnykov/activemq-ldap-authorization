@@ -18,19 +18,6 @@
       ],
       "depNameTemplate": "org.eclipse.jetty:jetty-util",
       "datasourceTemplate": "maven"
-    },
-    {
-      "customType": "regex",
-      "description": "ldaptive jar pinned in the ActiveMQ Dockerfile and scripts/set-env.sh",
-      "managerFilePatterns": [
-        "/(^|/)Dockerfile$/",
-        "/(^|/)set-env\\.sh$/"
-      ],
-      "matchStrings": [
-        "LDAPTIVE_VER\\s*[=:]\\s*\"?(?<currentValue>[0-9][^\"\\s]+)\"?"
-      ],
-      "depNameTemplate": "org.ldaptive:ldaptive",
-      "datasourceTemplate": "maven"
     }
   ],
   "packageRules": [

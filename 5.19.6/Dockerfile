@@ -8,7 +8,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ENV ACTIVEMQ_VER=5.19.6
 ENV JETTY_VER=9.4.58.v20250814
-ENV LDAPTIVE_VER=2.5.0
 ENV ACTIVEMQ=apache-activemq-$ACTIVEMQ_VER
 ENV ACTIVEMQ_TCP=61616 ACTIVEMQ_AMQP=5672 ACTIVEMQ_STOMP=61613 ACTIVEMQ_MQTT=1883 ACTIVEMQ_WS=61614 ACTIVEMQ_UI=8161
 ENV SHA512_VAL=cdf98fd42501bda694dbcee85bfaf33d8548091402f9cb2e768bc2e0b0905972022caea10deacb6db2e04d2d461b683269186c07bd5327333bc0d50956b66b48
@@ -39,8 +38,7 @@ COPY ./bin/* $ACTIVEMQ_HOME/bin/
 
 RUN curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/jetty-util-$JETTY_VER.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/$JETTY_VER/jetty-util-$JETTY_VER.jar && \
     curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/jetty-jaas-$JETTY_VER.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-jaas/$JETTY_VER/jetty-jaas-$JETTY_VER.jar && \
-    curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/jetty-security-$JETTY_VER.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-security/$JETTY_VER/jetty-security-$JETTY_VER.jar && \
-    curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/ldaptive-$LDAPTIVE_VER.jar https://repo1.maven.org/maven2/org/ldaptive/ldaptive/$LDAPTIVE_VER/ldaptive-$LDAPTIVE_VER.jar
+    curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/jetty-security-$JETTY_VER.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-security/$JETTY_VER/jetty-security-$JETTY_VER.jar
 
 
 COPY init.sh /app/init.sh

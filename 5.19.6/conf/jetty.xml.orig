@@ -1,50 +1,31 @@
-
-    <!--
-        Licensed to the Apache Software Foundation (ASF) under one or more contributor
-        license agreements. See the NOTICE file distributed with this work for additional
-        information regarding copyright ownership. The ASF licenses this file to You under
-        the Apache License, Version 2.0 (the "License"); you may not use this file except in
-        compliance with the License. You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or
-        agreed to in writing, software distributed under the License is distributed on an
-        "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-        implied. See the License for the specific language governing permissions and
-        limitations under the License.
-    -->
-    <!--
-        An embedded servlet engine for serving up the Admin consoles, REST and Ajax APIs and
-        some demos Include this file in your configuration to enable ActiveMQ web components
-        e.g. <import resource="jetty.xml"/>
-    -->
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!-- <bean id="securityLoginService" class="org.eclipse.jetty.security.HashLoginService">
         <property name="name" value="ActiveMQRealm" />
         <property name="config" value="${activemq.conf}/jetty-realm.properties" />
-    </bean>
-     -->
-    <bean id="defaultIdentityService" class="org.eclipse.jetty.security.DefaultIdentityService" />
+    </bean> -->
 
-    <bean id="ldapSecurityLoginService" class="org.eclipse.jetty.jaas.JAASLoginService">
-        <property name="name" value="LdapRealm" />
-        <property name="LoginModuleName" value="ldaptive-activemq-ldap"/>
-        <!-- <property name="CallbackHandlerClass" value="org.eclipse.jetty.jaas.callback.DefaultCallbackHandler" /> -->
-        <!-- <property name="roleClassNames" value="org.eclipse.jetty.jaas.JAASRole" /> -->
-        <property name="roleClassNames" value="org.ldaptive.jaas.LdapRole" />
+     <bean id="defaultIdentityService" class="org.eclipse.jetty.security.DefaultIdentityService" />
+
+    <bean id="securityLoginService" class="org.eclipse.jetty.jaas.JAASLoginService">
+        <property name="name" value="ActiveMQLDAPRealm" />
+        <property name="LoginModuleName" value="LDAPLogin"/>
+        <property name="CallbackHandlerClass" value="org.eclipse.jetty.jaas.callback.DefaultCallbackHandler" />
+	    <!-- <property name="roleClassNames" value="org.eclipse.jetty.plus.jaas.JAASRole" /> -->
+        <property name="roleClassNames" value="org.apache.activemq.jaas.GroupPrincipal" /> 
         <property name="identityService" ref="defaultIdentityService" />
-    </bean>    
+    </bean>
 
     <bean id="securityConstraint" class="org.eclipse.jetty.util.security.Constraint">
         <property name="name" value="BASIC" />
-        <property name="roles" value="webconsoleadmins,admins" />
+        <property name="roles" value="users,admins" />
         <!-- set authenticate=false to disable login -->
         <property name="authenticate" value="true" />
     </bean>
     <bean id="adminSecurityConstraint" class="org.eclipse.jetty.util.security.Constraint">
         <property name="name" value="BASIC" />
-        <property name="roles" value="webconsoleadmins,admins" />
+        <property name="roles" value="admins" />
          <!-- set authenticate=false to disable login -->
         <property name="authenticate" value="true" />
     </bean>
@@ -87,11 +68,25 @@
 					<property name="contextPath" value="/admin" />
 					<property name="resourceBase" value="${activemq.home}/webapps/admin" />
 					<property name="logUrlOnStart" value="true" />
+					<!-- ACTIVEMQ_HOME (/opt/activemq) is a symlink; Jetty 9.4 (ActiveMQ 5.17+)
+					     rejects WEB-INF resources resolved through symlinks, so the console
+					     webapp's Spring context could not load /WEB-INF/webconsole-embedded.xml
+					     (HTTP 503). Allow symlink aliases. Ref: AMQ-7341. -->
+					<property name="aliasChecks">
+						<list>
+							<bean class="org.eclipse.jetty.server.handler.AllowSymLinkAliasChecker"/>
+						</list>
+					</property>
 				</bean>
 				<bean class="org.eclipse.jetty.webapp.WebAppContext">
 					<property name="contextPath" value="/api" />
 					<property name="resourceBase" value="${activemq.home}/webapps/api" />
 					<property name="logUrlOnStart" value="true" />
+					<property name="aliasChecks">
+						<list>
+							<bean class="org.eclipse.jetty.server.handler.AllowSymLinkAliasChecker"/>
+						</list>
+					</property>
 				</bean>
 				<bean class="org.eclipse.jetty.server.handler.ResourceHandler">
 					<property name="directoriesListed" value="false" />
@@ -109,8 +104,8 @@
 		</property>
 	</bean>    
     <bean id="securityHandler" class="org.eclipse.jetty.security.ConstraintSecurityHandler">
-        <property name="loginService" ref="ldapSecurityLoginService" />
-        <property name="identityService" ref="defaultIdentityService" />
+        <property name="loginService" ref="securityLoginService" />
+        <property name="identityService" ref="defaultIdentityService" /> 
         <property name="authenticator">
             <bean class="org.eclipse.jetty.security.authentication.BasicAuthenticator" />
         </property>
@@ -156,7 +151,6 @@
            	<bean id="Connector" class="org.eclipse.jetty.server.ServerConnector">
            		<constructor-arg ref="Server" />
                     <!-- see the jettyPort bean -->
-                   <!-- <property name="host" value="#{systemProperties['jetty.host']}" /> -->
                    <property name="host" value="0.0.0.0" />
                    <property name="port" value="#{systemProperties['jetty.port']}" />
                </bean>

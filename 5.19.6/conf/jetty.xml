@@ -10,10 +10,10 @@
 
     <bean id="securityLoginService" class="org.eclipse.jetty.jaas.JAASLoginService">
         <property name="name" value="ActiveMQLDAPRealm" />
-        <property name="LoginModuleName" value="ldaptive-activemq-ldap"/>
+        <property name="LoginModuleName" value="LDAPLogin"/>
         <property name="CallbackHandlerClass" value="org.eclipse.jetty.jaas.callback.DefaultCallbackHandler" />
 	    <!-- <property name="roleClassNames" value="org.eclipse.jetty.plus.jaas.JAASRole" /> -->
-        <property name="roleClassNames" value="org.ldaptive.jaas.LdapRole" /> 
+        <property name="roleClassNames" value="org.apache.activemq.jaas.GroupPrincipal" /> 
         <property name="identityService" ref="defaultIdentityService" />
     </bean>
 
@@ -68,11 +68,25 @@
 					<property name="contextPath" value="/admin" />
 					<property name="resourceBase" value="${activemq.home}/webapps/admin" />
 					<property name="logUrlOnStart" value="true" />
+					<!-- ACTIVEMQ_HOME (/opt/activemq) is a symlink; Jetty 9.4 (ActiveMQ 5.17+)
+					     rejects WEB-INF resources resolved through symlinks, so the console
+					     webapp's Spring context could not load /WEB-INF/webconsole-embedded.xml
+					     (HTTP 503). Allow symlink aliases. Ref: AMQ-7341. -->
+					<property name="aliasChecks">
+						<list>
+							<bean class="org.eclipse.jetty.server.handler.AllowSymLinkAliasChecker"/>
+						</list>
+					</property>
 				</bean>
 				<bean class="org.eclipse.jetty.webapp.WebAppContext">
 					<property name="contextPath" value="/api" />
 					<property name="resourceBase" value="${activemq.home}/webapps/api" />
 					<property name="logUrlOnStart" value="true" />
+					<property name="aliasChecks">
+						<list>
+							<bean class="org.eclipse.jetty.server.handler.AllowSymLinkAliasChecker"/>
+						</list>
+					</property>
 				</bean>
 				<bean class="org.eclipse.jetty.server.handler.ResourceHandler">
 					<property name="directoriesListed" value="false" />
