@@ -27,12 +27,7 @@
             <value>file:${activemq.conf}/credentials.properties</value>
         </property>
     </bean>
-
-   <!-- Allows accessing the server log -->
-    <bean id="logQuery" class="io.fabric8.insight.log.log4j.Log4jLogQuery"
-          lazy-init="false" scope="singleton"
-          init-method="start" destroy-method="stop">
-    </bean>
+    <!-- logQuery bean removed: ActiveMQ 5.17+ dropped io.fabric8...Log4jLogQuery (Log4j2 migration) -->
 
     <!--
         The <broker> element is used to configure the ActiveMQ broker.

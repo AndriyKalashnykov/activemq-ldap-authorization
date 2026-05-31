@@ -4,7 +4,7 @@
 
 # ActiveMQ LDAP Authentication and Authorization
 
-A runnable demo that delegates **Apache ActiveMQ 5.16.1** authentication and authorization to an LDAP directory instead of a local user file. It ships three interchangeable directory backends — **OpenLDAP**, **Apache DS** (faking Microsoft Active Directory), and **Samba AD** — and also shows how to secure the ActiveMQ Jetty web console. Everything runs as Docker images and `docker-compose` stacks; there is no application source to compile.
+A runnable demo that delegates **Apache ActiveMQ 5.19.6** authentication and authorization to an LDAP directory instead of a local user file. It ships three interchangeable directory backends — **OpenLDAP**, **Apache DS** (faking Microsoft Active Directory), and **Samba AD** — and also shows how to secure the ActiveMQ Jetty web console. Everything runs as Docker images and `docker-compose` stacks; there is no application source to compile.
 
 ## Table of Contents
 
@@ -22,12 +22,12 @@ A runnable demo that delegates **Apache ActiveMQ 5.16.1** authentication and aut
 
 ## How it works
 
-ActiveMQ never owns its own user/role database. Two broker plugins, configured in [`5.16.1/conf/activemq.xml`](5.16.1/conf/activemq.xml), delegate to LDAP at runtime:
+ActiveMQ never owns its own user/role database. Two broker plugins, configured in [`5.19.6/conf/activemq.xml`](5.19.6/conf/activemq.xml), delegate to LDAP at runtime:
 
-- **Authentication** — `jaasAuthenticationPlugin` using the `LDAPLogin` realm defined in [`5.16.1/conf/login.config`](5.16.1/conf/login.config) (`org.apache.activemq.jaas.LDAPLoginModule`).
+- **Authentication** — `jaasAuthenticationPlugin` using the `LDAPLogin` realm defined in [`5.19.6/conf/login.config`](5.19.6/conf/login.config) (`org.apache.activemq.jaas.LDAPLoginModule`).
 - **Authorization** — `authorizationPlugin` with a `cachedLDAPAuthorizationMap` that reads queue/topic/temp permissions from LDAP group entries and refreshes them on an interval.
 
-The shipped `activemq.xml` and `login.config` are **templates**: they contain `##### PLACEHOLDER #####` tokens that the container entrypoint ([`5.16.1/init.sh`](5.16.1/init.sh)) rewrites from environment variables (`LDAP_HOST`, `LDAP_QUEUE_SEARCH_BASE`, …) at startup. To change the LDAP wiring, set the env vars — never hardcode values into the config files.
+The shipped `activemq.xml` and `login.config` are **templates**: they contain `##### PLACEHOLDER #####` tokens that the container entrypoint ([`5.19.6/init.sh`](5.19.6/init.sh)) rewrites from environment variables (`LDAP_HOST`, `LDAP_QUEUE_SEARCH_BASE`, …) at startup. To change the LDAP wiring, set the env vars — never hardcode values into the config files.
 
 ## Architecture
 
@@ -53,7 +53,7 @@ All backends serve the same base DN `dc=activemq,dc=apache,dc=org`:
 Start the default stack — OpenLDAP + ActiveMQ + phpLDAPadmin:
 
 ```bash
-make up                       # or: docker compose -f 5.16.1/docker-compose.yml up
+make up                       # or: docker compose -f 5.19.6/docker-compose.yml up
 ```
 
 Then open the [web consoles](#web-consoles). Stop everything with `make down`.
@@ -121,16 +121,16 @@ make search-apacheds     # manual: same against Apache DS (port 10389)
 
 Operator-tunable values live in two files (keep version pins in sync between them):
 
-- [`5.16.1/.env`](5.16.1/.env) — consumed by `docker-compose`: LDAP DNs/search bases, ports, JVM/store sizing, log rotation.
+- [`5.19.6/.env`](5.19.6/.env) — consumed by `docker-compose`: LDAP DNs/search bases, ports, JVM/store sizing, log rotation.
 - [`scripts/set-env.sh`](scripts/set-env.sh) — consumed by the helper scripts: version pins (`ACTIVEMQ_VER`, `JETTY_VER`, `LDAPTIVE_VER`), image and container names, and the (commented-out) `DOCKER_LOGIN` / `DOCKER_PWD` DockerHub credentials used by `make push`.
 
 ## Tech Stack
 
 | Component | Technology |
 |-----------|------------|
-| Message broker | Apache ActiveMQ 5.16.1 (`andriykalashnykov/docker-activemq:5.16.1`) |
-| Broker runtime | `eclipse-temurin:8-jre` (Java 8) |
-| Web console auth | Jetty 9.4.35 (`jetty-jaas`, `jetty-security`, `jetty-util`) + ldaptive 1.2.4 |
+| Message broker | Apache ActiveMQ 5.19.6 (`andriykalashnykov/docker-activemq:5.19.6`) |
+| Broker runtime | `eclipse-temurin:11-jre` (Java 11) |
+| Web console auth | Jetty 9.4.58 (`jetty-jaas`, `jetty-security`, `jetty-util`) + ldaptive 1.3.3 |
 | Directory (default) | OpenLDAP — `osixia/openldap:1.5.0` |
 | Directory (AD mimic) | Apache DS — `andriykalashnykov/apacheds-ad` |
 | Directory (AD) | Samba AD domain controller — `ubuntu:24.04` base |

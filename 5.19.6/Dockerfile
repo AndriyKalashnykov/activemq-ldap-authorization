@@ -1,4 +1,4 @@
-FROM eclipse-temurin:8-jre
+FROM eclipse-temurin:11-jre
 
 LABEL maintainer="AndriyKalashnykov@gmail.com"
 
@@ -6,12 +6,12 @@ LABEL maintainer="AndriyKalashnykov@gmail.com"
 # and brace expansion in the apt cleanup well-defined (SC3009).
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-ENV ACTIVEMQ_VER=5.16.1
-ENV JETTY_VER=9.4.35.v20201120
-ENV LDAPTIVE_VER=1.2.4
+ENV ACTIVEMQ_VER=5.19.6
+ENV JETTY_VER=9.4.58.v20250814
+ENV LDAPTIVE_VER=1.3.3
 ENV ACTIVEMQ=apache-activemq-$ACTIVEMQ_VER
 ENV ACTIVEMQ_TCP=61616 ACTIVEMQ_AMQP=5672 ACTIVEMQ_STOMP=61613 ACTIVEMQ_MQTT=1883 ACTIVEMQ_WS=61614 ACTIVEMQ_UI=8161
-ENV SHA512_VAL=f98c9da5dafa2dc291070fecd57b7fccd0954cc8b2be09abc77ea66745b89283358297f308ec30dd47efd3e0c9d4cffc3821ef429f8f94d6c8971bbe933809b2
+ENV SHA512_VAL=cdf98fd42501bda694dbcee85bfaf33d8548091402f9cb2e768bc2e0b0905972022caea10deacb6db2e04d2d461b683269186c07bd5327333bc0d50956b66b48
 
 RUN apt-get update && apt-get upgrade --yes && apt-get install --yes --no-install-recommends openssl lsof net-tools nmap && apt-get clean autoclean && apt-get autoremove --yes && rm -rf /var/lib/{apt,dpkg,cache,log}/
 

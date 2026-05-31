@@ -2,7 +2,7 @@
 # Sourceable helper library — pure functions only, NO top-level side effects.
 # Sourced by e2e/*.sh and unit-tested directly by tests/templating.bats.
 #
-# These functions model the env-var -> config templating that 5.16.1/init.sh
+# These functions model the env-var -> config templating that the broker's init.sh
 # performs at container startup (replacing `##### VAR #####` tokens with the
 # value of the matching environment variable). Extracting them here makes the
 # substitution logic unit-testable without spinning up a container.

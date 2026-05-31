@@ -28,11 +28,12 @@
         </property>
     </bean>
 
-   <!-- Allows accessing the server log -->
-    <bean id="logQuery" class="io.fabric8.insight.log.log4j.Log4jLogQuery"
-          lazy-init="false" scope="singleton"
-          init-method="start" destroy-method="stop">
-    </bean>
+    <!--
+        NOTE: ActiveMQ 5.17+ migrated from Log4j 1.x to Log4j2, removing the
+        io.fabric8.insight.log.log4j.Log4jLogQuery bean that 5.16 shipped here.
+        The stock 5.19.6 activemq.xml has no logQuery bean — keeping it caused
+        ClassNotFoundException at broker startup. Removed to match 5.19.6.
+    -->
 
     <!--
         The <broker> element is used to configure the ActiveMQ broker.

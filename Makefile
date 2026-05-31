@@ -5,7 +5,7 @@ SHELL := /bin/bash
 # Tunables — override via the environment, e.g. `make build DOCKER_LOGIN=me`.
 # Mirror scripts/set-env.sh; keep version pins in sync when bumping.
 # ---------------------------------------------------------------------------
-ACTIVEMQ_VER     ?= 5.16.1
+ACTIVEMQ_VER     ?= 5.19.6
 IMAGE_NAME       ?= docker-activemq
 APACHEDS_IMAGE   ?= apacheds-ad
 APACHEDS_VER     ?= latest
@@ -34,7 +34,7 @@ deps: ## Verify required local tooling is installed
 lint: ## Lint the Dockerfiles with hadolint
 	hadolint $(ACTIVEMQ_VER)/Dockerfile $(SAMBA_DOCKERFILE)
 
-build: ## Build the ActiveMQ broker image (5.16.1/Dockerfile)
+build: ## Build the ActiveMQ broker image ($(ACTIVEMQ_VER)/Dockerfile)
 	DOCKER_BUILDKIT=1 docker build -f $(ACTIVEMQ_VER)/Dockerfile -t $(ACTIVEMQ_IMAGE) $(ACTIVEMQ_VER)
 
 build-samba: ## Build the Samba AD domain-controller image

@@ -1,6 +1,8 @@
 #!/bin/bash
 
-ACTIVEMQ_BASE=/opt/apache-activemq-5.16.1
+# Version-parameterized (ACTIVEMQ_VER is exported by the Dockerfile) so this
+# never drifts when the broker version is bumped.
+ACTIVEMQ_BASE=/opt/apache-activemq-${ACTIVEMQ_VER}
 JETTY_REALM_FILE=$ACTIVEMQ_BASE/conf/jetty-realm.properties
 ACTIVEMQ_CONF_FILE=$ACTIVEMQ_BASE/conf/activemq.xml
 LOGIN_CONF_FILE=$ACTIVEMQ_BASE/conf/login.config
