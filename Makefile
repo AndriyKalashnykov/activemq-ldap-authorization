@@ -15,12 +15,14 @@ DOCKER_LOGIN     ?=
 DOCKER_REGISTRY  ?= docker.io
 COMPOSE_FILE     ?= $(ACTIVEMQ_VER)/docker-compose.yml
 TRIVY_SEVERITY   ?= CRITICAL,HIGH
+# renovate: datasource=docker depName=minlag/mermaid-cli
+MERMAID_CLI_VERSION ?= 11.15.0
 
 # Image reference: prefix with the DockerHub login when set, else build local.
 ACTIVEMQ_IMAGE := $(if $(DOCKER_LOGIN),$(DOCKER_LOGIN)/,)$(IMAGE_NAME):$(ACTIVEMQ_VER)
 SAMBA_DOCKERFILE := samba/Dockerfile
 
-.PHONY: help deps lint build build-samba scan push up down logs test e2e \
+.PHONY: help deps lint mermaid-lint build build-samba scan push up down logs test e2e \
         search-openldap search-apacheds clean ci renovate-validate
 
 help: ## Show this help
@@ -33,6 +35,14 @@ deps: ## Verify required local tooling is installed
 
 lint: ## Lint the Dockerfiles with hadolint
 	hadolint $(ACTIVEMQ_VER)/Dockerfile $(SAMBA_DOCKERFILE)
+
+mermaid-lint: ## Validate the README Mermaid diagram(s) via minlag/mermaid-cli
+	@# Default entrypoint already supplies -p /puppeteer-config.json (--no-sandbox).
+	@# Repo mounted read-only; render into the mermaidcli user's own home (writable;
+	@# mmdc writes per-chart SVGs to cwd) and discard it — we only gate on parse success.
+	@docker run --rm -e PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
+		-v "$$PWD:/data:ro" -w /home/mermaidcli \
+		minlag/mermaid-cli:$(MERMAID_CLI_VERSION) -i /data/README.md -o /home/mermaidcli/out.md
 
 build: ## Build the ActiveMQ broker image ($(ACTIVEMQ_VER)/Dockerfile)
 	DOCKER_BUILDKIT=1 docker build -f $(ACTIVEMQ_VER)/Dockerfile -t $(ACTIVEMQ_IMAGE) $(ACTIVEMQ_VER)
@@ -77,4 +87,4 @@ clean: ## Remove the locally built broker image
 renovate-validate: ## Validate renovate.json against the Renovate schema
 	npx --yes --package renovate -- renovate-config-validator
 
-ci: lint test build scan ## Local CI pipeline: lint, bats unit tests, build, scan
+ci: lint mermaid-lint test build scan ## Local CI pipeline: lint, mermaid-lint, bats unit tests, build, scan

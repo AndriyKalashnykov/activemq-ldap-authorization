@@ -68,6 +68,9 @@ jobs:
     - name: Unit tests (bats — config templating)
       run: make test
 
+    - name: Mermaid lint (README C4 diagram)
+      run: make mermaid-lint
+
   e2e:
 
     runs-on: ubuntu-latest
