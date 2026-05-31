@@ -11,11 +11,13 @@ cd $SCRIPT_PARENT_DIR
 # https://activemq.apache.org/cached-ldap-authorization-module
 # https://svn.apache.org/repos/asf/activemq/trunk/activemq-unit-tests/src/test/resources/org/apache/activemq/security/activemq-openldap.ldif
 
-# https://github.com/osixia/docker-openldap
-# https://github.com/osixia/docker-openldap/blob/master/example/docker-compose.yml
+# Minimal OpenLDAP image built from Symas's maintained packages (openldap/Dockerfile).
+# Suffix dc=activemq,dc=apache,dc=org is derived from LDAP_DOMAIN; the seed LDIF
+# under openldap/ldif is slapadd'd from /seed at startup.
 
 # 1
-docker run -d --rm --hostname $OPENLDAP_CONTAINER --name $OPENLDAP_CONTAINER -p 389:389 -p 636:636 -v "$(pwd)/openldap/ldif":/container/service/slapd/assets/config/bootstrap/ldif/custom -e LDAP_DOMAIN=activemq.apache.org -e LDAP_BASE_DN="dc=activemq,dc=apache,dc=org" -e LDAP_ORGANISATION="Apache ActiveMQ Test Org" -e LDAP_ROOTPASS=admin -e LDAP_TLS_VERIFY_CLIENT=never -e LDAP_TLS_CIPHER_SUITE=SECURE256:+SECURE128:+VERS-TLS-ALL:+VERS-TLS1.2:+RSA:+DHE-DSS:+CAMELLIA-128-CBC:+CAMELLIA-256-CBC osixia/openldap:1.5.0 --copy-service
+docker build -t "${OPENLDAP_IMAGE:-activemq-openldap:latest}" "$SCRIPT_PARENT_DIR/openldap"
+docker run -d --rm --hostname $OPENLDAP_CONTAINER --name $OPENLDAP_CONTAINER -p 389:389 -p 636:636 -v "$(pwd)/openldap/ldif":/seed:ro -e LDAP_DOMAIN=activemq.apache.org -e LDAP_ORGANISATION="Apache ActiveMQ Test Org" -e LDAP_ADMIN_PASSWORD=admin "${OPENLDAP_IMAGE:-activemq-openldap:latest}"
 OPENLDAP_IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $OPENLDAP_CONTAINER)
 echo "OPENLDAP_IP: https://$OPENLDAP_IP:389"
 
@@ -37,6 +39,6 @@ echo "Password: admin"
 # 3
 # docker run --rm -p 389:389 -p 636:636 -v $(pwd)/ldif-activemq58:/container/service/slapd/assets/config/bootstrap/ldif/custom -e LDAP_DOMAIN=ActiveMQ.system -e LDAP_BASE_DN="o=ActiveMQ,ou=system" -e LDAP_ORGANISATION="Apache ActiveMQ Test Org" -e LDAP_ROOTPASS=secret --name openldap osixia/openldap:1.5.0 --copy-service
 
-docker exec -it $OPENLDAP_CONTAINER ls /container/service/slapd/assets/config/bootstrap/ldif/custom
+docker exec -it $OPENLDAP_CONTAINER ls /seed
 
 cd $LAUNCH_DIR

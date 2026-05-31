@@ -11,6 +11,7 @@ APACHEDS_IMAGE   ?= apacheds-ad
 APACHEDS_VER     ?= latest
 SAMBA_IMAGE      ?= samba-ad
 SAMBA_VER        ?= latest
+OPENLDAP_IMAGE   ?= activemq-openldap:latest
 DOCKER_LOGIN     ?=
 DOCKER_REGISTRY  ?= docker.io
 COMPOSE_FILE     ?= $(ACTIVEMQ_VER)/docker-compose.yml
@@ -23,7 +24,7 @@ ACTIVEMQ_IMAGE := $(if $(DOCKER_LOGIN),$(DOCKER_LOGIN)/,)$(IMAGE_NAME):$(ACTIVEM
 SAMBA_IMAGE_REF := $(if $(DOCKER_LOGIN),$(DOCKER_LOGIN)/,)$(SAMBA_IMAGE):$(SAMBA_VER)
 SAMBA_DOCKERFILE := samba/Dockerfile
 
-.PHONY: help deps lint mermaid-lint build build-samba scan push up down logs test e2e e2e-samba \
+.PHONY: help deps lint mermaid-lint build build-samba build-openldap scan push up down logs test e2e e2e-samba \
         search-openldap search-apacheds clean ci renovate-validate
 
 help: ## Show this help
@@ -35,7 +36,7 @@ deps: ## Verify required local tooling is installed
 	@docker compose version >/dev/null 2>&1 || { echo "docker compose v2 not found"; exit 1; }
 
 lint: ## Lint the Dockerfiles with hadolint
-	hadolint $(ACTIVEMQ_VER)/Dockerfile $(SAMBA_DOCKERFILE)
+	hadolint $(ACTIVEMQ_VER)/Dockerfile $(SAMBA_DOCKERFILE) openldap/Dockerfile
 
 mermaid-lint: ## Validate the README Mermaid diagram(s) via minlag/mermaid-cli
 	@# Default entrypoint already supplies -p /puppeteer-config.json (--no-sandbox).
@@ -50,6 +51,9 @@ build: ## Build the ActiveMQ broker image ($(ACTIVEMQ_VER)/Dockerfile)
 
 build-samba: ## Build the Samba AD domain-controller image
 	DOCKER_BUILDKIT=1 docker build -f $(SAMBA_DOCKERFILE) -t $(SAMBA_IMAGE_REF) samba
+
+build-openldap: ## Build the OpenLDAP image (Symas packages; openldap/Dockerfile)
+	DOCKER_BUILDKIT=1 docker build -t $(OPENLDAP_IMAGE) openldap
 
 scan: ## Scan the built broker image for CRITICAL/HIGH CVEs
 	trivy image --severity $(TRIVY_SEVERITY) --ignore-unfixed --exit-code 1 $(ACTIVEMQ_IMAGE)

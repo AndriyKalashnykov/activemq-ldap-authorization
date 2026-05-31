@@ -1,6 +1,8 @@
 services:
   openldap:
-    image: osixia/openldap:1.5.0
+    # Minimal image built from Symas's maintained OpenLDAP packages.
+    build: .
+    image: ${OPENLDAP_IMAGE:-activemq-openldap:latest}
     restart: unless-stopped
     hostname: openldap
     container_name: openldap
@@ -8,14 +10,11 @@ services:
       - "389:389"
       - "636:636"
     volumes:
-      - $PWD/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
+      - $PWD/ldif:/seed:ro
     environment:
       - LDAP_DOMAIN=activemq.apache.org
-      - LDAP_BASE_DN=${LDAP_BASE_DN}
       - LDAP_ORGANISATION="Apache ActiveMQ Test Org"
-      - LDAP_ROOTPASS=admin     
       - LDAP_ADMIN_PASSWORD=admin
-    command: "--loglevel info --copy-service"   
     networks:
       ldap_net:
         ipv4_address: 172.28.1.10
