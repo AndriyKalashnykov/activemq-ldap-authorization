@@ -20,9 +20,10 @@ MERMAID_CLI_VERSION ?= 11.15.0
 
 # Image reference: prefix with the DockerHub login when set, else build local.
 ACTIVEMQ_IMAGE := $(if $(DOCKER_LOGIN),$(DOCKER_LOGIN)/,)$(IMAGE_NAME):$(ACTIVEMQ_VER)
+SAMBA_IMAGE_REF := $(if $(DOCKER_LOGIN),$(DOCKER_LOGIN)/,)$(SAMBA_IMAGE):$(SAMBA_VER)
 SAMBA_DOCKERFILE := samba/Dockerfile
 
-.PHONY: help deps lint mermaid-lint build build-samba scan push up down logs test e2e \
+.PHONY: help deps lint mermaid-lint build build-samba scan push up down logs test e2e e2e-samba \
         search-openldap search-apacheds clean ci renovate-validate
 
 help: ## Show this help
@@ -48,7 +49,7 @@ build: ## Build the ActiveMQ broker image ($(ACTIVEMQ_VER)/Dockerfile)
 	DOCKER_BUILDKIT=1 docker build -f $(ACTIVEMQ_VER)/Dockerfile -t $(ACTIVEMQ_IMAGE) $(ACTIVEMQ_VER)
 
 build-samba: ## Build the Samba AD domain-controller image
-	DOCKER_BUILDKIT=1 docker build -f $(SAMBA_DOCKERFILE) -t $(if $(DOCKER_LOGIN),$(DOCKER_LOGIN)/,)$(SAMBA_IMAGE):$(SAMBA_VER) samba
+	DOCKER_BUILDKIT=1 docker build -f $(SAMBA_DOCKERFILE) -t $(SAMBA_IMAGE_REF) samba
 
 scan: ## Scan the built broker image for CRITICAL/HIGH CVEs
 	trivy image --severity $(TRIVY_SEVERITY) --ignore-unfixed --exit-code 1 $(ACTIVEMQ_IMAGE)
@@ -74,6 +75,9 @@ test: ## Run bats unit tests (config-templating logic in scripts/lib.sh)
 e2e: ## Bring up the stack, assert the LDAP authN/authZ contract, tear down
 	@LDAP_REFRESH_INTERVAL=15000 docker compose -f $(COMPOSE_FILE) up -d
 	@./e2e/e2e-test.sh; rc=$$?; docker compose -f $(COMPOSE_FILE) down -v; exit $$rc
+
+e2e-samba: build-samba ## Provision the Samba AD DC and assert it serves LDAP (needs --privileged)
+	@SAMBA_IMAGE_REF="$(SAMBA_IMAGE_REF)" ./e2e/e2e-samba.sh
 
 search-openldap: ## ldapsearch against the running OpenLDAP backend
 	./scripts/search-openldap.sh

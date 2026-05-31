@@ -48,7 +48,7 @@ C4Context
 | Web console auth | Jetty 9.4.58 (`jetty-jaas`, `jetty-security`, `jetty-util`); JAAS delegated to ActiveMQ's `LDAPLoginModule` |
 | Directory (default) | OpenLDAP — `osixia/openldap:1.5.0` |
 | Directory (AD mimic) | Apache DS — `andriykalashnykov/apacheds-ad` |
-| Directory (AD) | Samba AD domain controller — `ubuntu:24.04` base |
+| Directory (AD) | Samba AD domain controller — `ubuntu:26.04` base |
 | LDAP admin UI | phpLDAPadmin — `phpldapadmin/phpldapadmin:2.3.11` (maintained leenooks v2; HTTP on :8080) |
 | LDAP account manager | LAM — `ghcr.io/ldapaccountmanager/lam:9.5` (standalone `openldap/` stack) |
 | Orchestration | Docker Compose v2 |
@@ -140,7 +140,7 @@ make search-apacheds     # manual: same against Apache DS (port 10389)
 Operator-tunable values live in two files (keep version pins in sync between them):
 
 - [`5.19.6/.env`](5.19.6/.env) — consumed by `docker-compose`: LDAP DNs/search bases, ports, JVM/store sizing, log rotation.
-- [`scripts/set-env.sh`](scripts/set-env.sh) — consumed by the helper scripts: version pins (`ACTIVEMQ_VER`, `JETTY_VER`, `LDAPTIVE_VER`), image and container names, and the (commented-out) `DOCKER_LOGIN` / `DOCKER_PWD` DockerHub credentials used by `make push`.
+- [`scripts/set-env.sh`](scripts/set-env.sh) — consumed by the helper scripts: version pins (`ACTIVEMQ_VER`, `JETTY_VER`), image and container names, and the (commented-out) `DOCKER_LOGIN` / `DOCKER_PWD` DockerHub credentials used by `make push`.
 
 ## Make targets
 
@@ -154,6 +154,7 @@ Operator-tunable values live in two files (keep version pins in sync between the
 | `make up` / `make down` / `make logs` | Manage the default Compose stack |
 | `make test` | Unit tests (bats — config templating) |
 | `make e2e` | Bring up stack + assert the LDAP authN/authZ contract |
+| `make e2e-samba` | Provision the Samba AD DC + assert it serves LDAP (`--privileged`) |
 | `make ci` | Local pipeline: lint + test + build + scan |
 
 ## CI/CD
@@ -165,6 +166,7 @@ GitHub Actions ([`CI`](.github/workflows/docker-image.yml)) runs on every push a
 | `build` | Matrix-builds both Dockerfiles (`5.19.6/`, `samba/`), each followed by a Trivy CVE scan |
 | `test` | `bats` unit tests for the config-templating logic |
 | `e2e` | Builds the broker image, composes the OpenLDAP + ActiveMQ stack, and asserts the LDAP authN/authZ matrix |
+| `e2e-samba` | Provisions the Samba AD domain controller and asserts it serves the AD directory over LDAP (`--privileged`) |
 
 The Trivy scan is **report-only** (`exit-code: 0`): the base image and ActiveMQ-bundled transitive deps carry CVEs tracked in [`CLAUDE.md`](CLAUDE.md)'s upgrade backlog. No repository secrets are required. Dependency pins (Jetty via Maven, the Docker images, and GitHub Actions) are kept current by [Renovate](https://docs.renovatebot.com/). A weekly [`Cleanup old workflow runs`](.github/workflows/cleanup-runs.yml) workflow prunes old runs and caches.
 
