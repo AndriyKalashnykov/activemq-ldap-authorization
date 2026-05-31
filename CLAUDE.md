@@ -34,12 +34,13 @@ Demo credentials throughout are `admin`/`admin` and `user`/`admin` (passwords ar
 - `5.19.6/` — the ActiveMQ broker image: `Dockerfile`, templated `conf/`, `bin/env`, `init.sh`, and the **primary** `docker-compose.yml` (OpenLDAP + ActiveMQ + phpLDAPadmin).
 - `apacheds-ad/` — Apache DS backend stack (image `andriykalashnykov/apacheds-ad`, LDAP on host port `10389`). `ldif/users.ldif` adds Microsoft `sAMAccountName`/`memberOf` schema to mimic AD.
 - `openldap/` — standalone OpenLDAP compose + seed LDIF, used by `scripts/start-openldap.sh`.
-- `samba/` — Samba-as-AD domain controller (`Dockerfile` + provisioning scripts), an alternative to Apache DS.
+- `samba/` — Samba-as-AD domain controller (`ubuntu:26.04` `Dockerfile` + provisioning scripts), an alternative to Apache DS. The scripts (`samba-ad-setup.sh`/`samba-ad-run.sh`) are **bind-mounted** at runtime into `/opt/ad-scripts`, not baked into the image.
 - `scripts/` — operational helpers (see below); `scripts/lib.sh` holds the sourceable, unit-tested config-templating functions.
 - `tests/templating.bats` — `bats` unit tests for `scripts/lib.sh` (the env→config substitution logic). Run via `make test`.
 - `e2e/e2e-test.sh` — asserting end-to-end test of the LDAP authN/authZ contract against the composed stack. Run via `make e2e`.
-- `.env.example` — committed source-of-truth defaults (LDAP/broker hosts, ports, demo creds, e2e tunables); sourced by `e2e/e2e-test.sh`.
-- `.github/workflows/docker-image.yml` — CI (`name: CI`): matrix-builds both Dockerfiles + Trivy scan (report-only), `test` (bats), and `e2e` (compose authZ contract) jobs.
+- `e2e/e2e-samba.sh` — asserting e2e for the Samba AD DC: provisions the DC (`--privileged`), then asserts LDAP/LDAPS/Kerberos/GC ports listen, the domain is provisioned, and an authenticated LDAPS search returns the Administrator entry. Run via `make e2e-samba`.
+- `.env.example` — committed source-of-truth defaults (LDAP/broker hosts, ports, demo creds, Samba realm/admin-password, e2e tunables); sourced by both e2e scripts.
+- `.github/workflows/docker-image.yml` — CI (`name: CI`): matrix-builds both Dockerfiles + Trivy scan (report-only), `test` (bats + mermaid-lint), `e2e` (compose authZ contract), and `e2e-samba` (Samba AD DC serves LDAP) jobs.
 
 ## Common Commands
 
@@ -72,6 +73,7 @@ Note: `build.sh` builds `apacheds-ad` from a `Dockerfile` that is **not** commit
 ```bash
 make test                # unit: bats over scripts/lib.sh config-templating logic
 make e2e                 # e2e: compose up → assert LDAP authN/authZ matrix → tear down
+make e2e-samba           # e2e: build + provision the Samba AD DC → assert it serves LDAP → tear down
 ./scripts/search-openldap.sh   # manual ldapsearch against OpenLDAP (port 389)
 ./scripts/search-apacheds.sh   # manual ldapsearch against Apache DS (port 10389)
 ```
@@ -94,6 +96,7 @@ This is exactly what the `docker-image.yml` workflow runs.
 - **Jetty `jetty-jaas`/`jetty-security`/`jetty-util` (9.4.58, matching ActiveMQ 5.19.6's bundled Jetty 9.4.x) jars** are curl'd from Maven Central at image-build time into the broker's `lib/` — needed for the Jetty web console's `JAASLoginService`. `JETTY_VER` must track the broker's bundled Jetty (`activemq-parent` pom `jetty9-version`). (ldaptive was removed — the console now uses ActiveMQ's own `LDAPLoginModule`.)
 - **Web-console symlink gotcha (`jetty.xml` `aliasChecks`)**: `ACTIVEMQ_HOME` (`/opt/activemq`) is a symlink to `/opt/apache-activemq-$ACTIVEMQ_VER`. Jetty 9.4 (ActiveMQ 5.17+) refuses to serve `WEB-INF/*` resolved through a symlink, so the console webapp's Spring context fails to load `/WEB-INF/webconsole-embedded.xml` → HTTP 503 (masked for years by the older ldaptive realm's class-load 500). The `/admin` and `/api` WebAppContexts in `jetty.xml` carry an `org.eclipse.jetty.server.handler.AllowSymLinkAliasChecker` to allow it. Ref: AMQ-7341. Do not remove it.
 - The base image is `eclipse-temurin:25-jre` (Java 25 LTS). ActiveMQ 5.19.6 only *requires* Java 11 (`source`/`target` = 11 in its parent pom; the Java-8 javadoc URL in that pom is a stale link, not the compile target) but runs cleanly on Java 25 — verified by the full e2e auth/authz contract (14/14) on the `25.0.3_9-jre` base. The Dockerfile installs `curl` explicitly because the `:25` base (Ubuntu 24.04) dropped it, whereas the old `:11-jre` (Jammy) base shipped it.
+- **Samba AD on Ubuntu 26.04 — explicit AD-DC packages (`samba/Dockerfile`)**: 26.04 stopped pulling the AD-DC pieces in transitively via `samba` (they were present on 24.04), so each is named explicitly: `samba-ad-dc` (the `/usr/sbin/samba` daemon — else "samba: command not found"), `samba-ad-provision` (AD DS schema — else "AD_DS_Attributes…v1903.ldf not found"), `samba-dsdb-modules` (DSDB ldb modules — else "Unable to load modules for secrets.ldb"), `samba-vfs-modules` (sysvol). `ldap-utils` is added for the e2e's over-the-wire LDAPS assertion. Provisioning needs `--privileged` (sysvol NT-ACL xattrs) on any base, not a 26.04 quirk. Guarded by `make e2e-samba`.
 - The [Upgrade Backlog](#upgrade-backlog) below tracks the deferred upgrades (ActiveMQ + the CVE driver, Jetty, the LDAP admin images, JDK).
 
 ## Skills
