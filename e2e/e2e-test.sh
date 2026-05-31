@@ -22,7 +22,7 @@ if [ -f .env.example ]; then set -a; . ./.env.example; set +a; fi
 # shellcheck source=/dev/null
 if [ -f .env         ]; then set -a; . ./.env;         set +a; fi
 
-ACTIVEMQ_VER="${ACTIVEMQ_VER:-5.19.6}"
+ACTIVEMQ_VER="${ACTIVEMQ_VER:-6.2.6}"
 ACTIVEMQ_CONTAINER="${ACTIVEMQ_CONTAINER:-activemq}"
 OPENLDAP_CONTAINER="${OPENLDAP_CONTAINER:-openldap}"
 CONSOLE_HOST="${ACTIVEMQ_CONSOLE_HOST:-localhost}"

@@ -22,7 +22,7 @@
   ],
   "packageRules": [
     {
-      "description": "ActiveMQ 5.19.6 requires Jetty 9.4.x; major Jetty bumps (10/11/12) are a manual migration tracked in CLAUDE.md",
+      "description": "ActiveMQ 6.2.6 bundles Jetty 11.0.26; JETTY_VER is a reference pin (6.x ships jetty-jaas, so no overlay jar). Major Jetty bumps (12+) are a manual migration tracked in CLAUDE.md",
       "matchDatasources": ["maven"],
       "matchPackageNames": ["org.eclipse.jetty:jetty-util"],
       "matchUpdateTypes": ["major"],

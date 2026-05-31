@@ -5,7 +5,7 @@ SHELL := /bin/bash
 # Tunables — override via the environment, e.g. `make build DOCKER_LOGIN=me`.
 # Mirror scripts/set-env.sh; keep version pins in sync when bumping.
 # ---------------------------------------------------------------------------
-ACTIVEMQ_VER     ?= 5.19.6
+ACTIVEMQ_VER     ?= 6.2.6
 IMAGE_NAME       ?= docker-activemq
 APACHEDS_IMAGE   ?= apacheds-ad
 APACHEDS_VER     ?= latest

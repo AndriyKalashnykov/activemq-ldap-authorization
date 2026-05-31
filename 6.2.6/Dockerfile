@@ -6,15 +6,15 @@ LABEL maintainer="AndriyKalashnykov@gmail.com"
 # and brace expansion in the apt cleanup well-defined (SC3009).
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-ENV ACTIVEMQ_VER=5.19.6
-ENV JETTY_VER=9.4.58.v20250814
+ENV ACTIVEMQ_VER=6.2.6
+ENV JETTY_VER=11.0.26
 ENV ACTIVEMQ=apache-activemq-$ACTIVEMQ_VER
 ENV ACTIVEMQ_TCP=61616 ACTIVEMQ_AMQP=5672 ACTIVEMQ_STOMP=61613 ACTIVEMQ_MQTT=1883 ACTIVEMQ_WS=61614 ACTIVEMQ_UI=8161
-ENV SHA512_VAL=cdf98fd42501bda694dbcee85bfaf33d8548091402f9cb2e768bc2e0b0905972022caea10deacb6db2e04d2d461b683269186c07bd5327333bc0d50956b66b48
+ENV SHA512_VAL=2b1e0c0e7336d86475c6a2149326ef9055542f04d34c3c6f4c18a0d79e2ef41dd033bbecfef2abe9117dd34b767c5c9714e349305ffc0117e210852359277172
 
 # curl is installed explicitly: the eclipse-temurin:25 base (Ubuntu 24.04)
 # dropped curl from the image, unlike the older :11-jre (Jammy) base that
-# shipped it. The ActiveMQ tarball + the Jetty jar below are fetched with curl.
+# shipped it. The ActiveMQ tarball below is fetched with curl.
 # `rm /usr/bin/pebble`: the temurin:25 base ships a stray ~10 MB Go ACME-test
 # binary (not apt-managed, not dpkg-owned) the broker never uses; it carried 8
 # HIGH Go-stdlib CVEs. Removing it is attack-surface reduction, not a workaround.
@@ -46,13 +46,6 @@ USER activemq
 
 COPY ./conf/* $ACTIVEMQ_HOME/conf/
 COPY ./bin/* $ACTIVEMQ_HOME/bin/
-
-# Only jetty-jaas is overlaid: it is the single jar genuinely absent from the
-# stock 5.19.6 distribution (it alone contains org.eclipse.jetty.jaas.JAASLoginService,
-# which jetty.xml requires). jetty-util and jetty-security already ship stock in
-# lib/web/ — overlaying them duplicated jars and risked cross-jar version skew.
-RUN curl -Lo /opt/apache-activemq-$ACTIVEMQ_VER/lib/jetty-jaas-$JETTY_VER.jar https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-jaas/$JETTY_VER/jetty-jaas-$JETTY_VER.jar
-
 
 COPY init.sh /app/init.sh
 
