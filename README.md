@@ -124,6 +124,8 @@ For Apache DS, log in to phpLDAPadmin with DN `cn=mqbroker,ou=Services,ou=Active
 ```bash
 make test                # bats unit tests for the init.sh config-templating logic
 make e2e                 # bring up the stack, assert the LDAP authN/authZ contract, tear down
+make e2e-samba           # build + provision the Samba AD DC, assert it serves LDAP, tear down
+make e2e-apacheds        # build + run the Apache DS image, assert it serves the AD seed, tear down
 make search-openldap     # manual: ldapwhoami + ldapsearch against OpenLDAP (port 389)
 make search-apacheds     # manual: same against Apache DS (port 10389)
 ```
