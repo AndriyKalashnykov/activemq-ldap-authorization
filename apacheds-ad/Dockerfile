@@ -37,7 +37,7 @@ RUN set -eux; \
     printf '%s  /ldap/ldap-server.jar\n' "${LDAP_SERVER_JAR_SHA256}" > /tmp/jar.sha256; \
     sha256sum -c /tmp/jar.sha256; rm -f /tmp/jar.sha256; \
     groupadd -g "${APP_GID}" ldap; \
-    useradd -r -l -u "${APP_UID}" -g ldap -d /ldap -s /usr/sbin/nologin ldap; \
+    useradd -l -u "${APP_UID}" -g ldap -d /ldap -s /usr/sbin/nologin ldap; \
     chown -R ldap:ldap /ldap; \
     apt-get purge -y curl; apt-get autoremove -y; apt-get clean; rm -rf /var/lib/apt/lists/*
 
