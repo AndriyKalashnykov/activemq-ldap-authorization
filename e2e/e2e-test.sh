@@ -103,6 +103,27 @@ hawtio_bad=$(curl -s -o /dev/null -w '%{http_code}' -X POST "${hawtio_base}/auth
 [ "$hawtio_bad" = "403" ] && pass "hawtio login with bad password -> 403" \
                           || fail "hawtio login with bad password -> ${hawtio_bad} (expected 403)"
 
+echo "== broker Jolokia endpoint (LDAP-secured) =="
+# hawtio manages the broker through its Jolokia agent at /api/jolokia, which is
+# protected by the same Jetty JAAS realm as the console: anonymous -> 401, a
+# valid LDAP login -> 200 with the agent's JSON. This crosses the boundary the
+# hawtio login test stops at (hawtio's own auth) and proves authenticated
+# requests actually reach the broker.
+JOLOKIA="http://${CONSOLE_HOST}:${CONSOLE_PORT}/api/jolokia"
+jolokia_anon=$(curl -s -o /dev/null -w '%{http_code}' "${JOLOKIA}/version" 2>/dev/null || true)
+[ "$jolokia_anon" = "401" ] && pass "Jolokia anonymous -> 401 (LDAP-secured)" \
+                            || fail "Jolokia anonymous -> ${jolokia_anon} (expected 401)"
+# Jolokia enforces an Origin allow-list (a null/unknown Origin is rejected 403,
+# distinct from the 401 auth gate above). The broker allows same-host origins, so
+# send the console's own Origin to get the real version document back.
+jolokia_auth=$(curl -s -u "${ADMIN_USER}:${ADMIN_PW}" \
+  -H "Origin: http://${CONSOLE_HOST}:${CONSOLE_PORT}" "${JOLOKIA}/version" 2>/dev/null || true)
+if printf '%s' "$jolokia_auth" | grep -qE '"request".*"type".*"version"'; then
+  pass "Jolokia admin/admin -> version JSON (authenticated broker access)"
+else
+  fail "Jolokia admin/admin did not return the version response: ${jolokia_auth:0:120}"
+fi
+
 echo "== config templating resolved (no leftover placeholders) =="
 for f in activemq.xml login.config; do
   if docker exec "$ACTIVEMQ_CONTAINER" grep -q '#####' "${CONF_DIR}/${f}" 2>/dev/null; then
@@ -150,6 +171,26 @@ if amq_produce "$DEMO_USER" "$DEMO_PW" "queue://ADMINS.TEST" | grep -qi 'not aut
   pass "user DENIED write to queue://ADMINS.TEST (authz enforced)"
 else
   fail "user was NOT denied queue://ADMINS.TEST — authorization not enforced!"
+fi
+
+echo "== authorization matrix (topics) =="
+# cachedLDAPAuthorizationMap indexes ou=Topic alongside ou=Queue; the seed grants
+# the same per-group writes on topic ADMINS.*/USERS.* as it does on queues, so the
+# matrix must hold for topics too (not just queues).
+if amq_produce "$ADMIN_USER" "$ADMIN_PW" "topic://ADMINS.TEST" | grep -qi 'Produced: 1 messages'; then
+  pass "admin ALLOWED to write topic://ADMINS.TEST"
+else
+  fail "admin unexpectedly denied topic://ADMINS.TEST"
+fi
+if amq_produce "$DEMO_USER" "$DEMO_PW" "topic://USERS.TEST" | grep -qi 'Produced: 1 messages'; then
+  pass "user ALLOWED to write topic://USERS.TEST"
+else
+  fail "user unexpectedly denied topic://USERS.TEST"
+fi
+if amq_produce "$DEMO_USER" "$DEMO_PW" "topic://ADMINS.TEST" | grep -qi 'not authorized to write to'; then
+  pass "user DENIED write to topic://ADMINS.TEST (authz enforced)"
+else
+  fail "user was NOT denied topic://ADMINS.TEST — topic authorization not enforced!"
 fi
 
 echo "== LDAP seed present =="

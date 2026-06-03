@@ -1,4 +1,4 @@
-[![CI](https://github.com/AndriyKalashnykov/activemq-ldap-authorization/actions/workflows/docker-image.yml/badge.svg?branch=master)](https://github.com/AndriyKalashnykov/activemq-ldap-authorization/actions/workflows/docker-image.yml)
+[![CI](https://github.com/AndriyKalashnykov/activemq-ldap-authorization/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/AndriyKalashnykov/activemq-ldap-authorization/actions/workflows/ci.yml)
 [![Hits](https://hits.sh/github.com/AndriyKalashnykov/activemq-ldap-authorization.svg?style=flat&label=hits&color=33CD56)](https://hits.sh/github.com/AndriyKalashnykov/activemq-ldap-authorization/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 [![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://app.renovatebot.com/dashboard#github/AndriyKalashnykov/activemq-ldap-authorization)
@@ -48,7 +48,7 @@ C4Context
 | Web console auth | Jetty 11.0.26 (bundled with the broker, incl. `jetty-jaas`); JAAS delegated to ActiveMQ's `LDAPLoginModule` |
 | Management console | hawtio 5.2.0 on Tomcat 11 / Java 25 (`hawtio/Dockerfile`); LDAP-secured via the **same** `LDAPLogin` realm |
 | Directory (default) | OpenLDAP — Symas-built (`openldap/Dockerfile`, slapd 2.6.x) |
-| Directory (AD mimic) | Apache DS — `andriykalashnykov/apacheds-ad` |
+| Directory (AD mimic) | Apache DS — built from `apacheds-ad/Dockerfile` (`eclipse-temurin:25-jre` + the pinned `ldap-server.jar` release) |
 | Directory (AD) | Samba AD domain controller — `ubuntu:26.04` base |
 | LDAP admin UI | phpLDAPadmin — `phpldapadmin/phpldapadmin:2.3.11` (maintained leenooks v2; HTTP on :8080) |
 | LDAP account manager | LAM — `ghcr.io/ldapaccountmanager/lam:9.5` (standalone `openldap/` stack) |
@@ -146,31 +146,49 @@ Operator-tunable values live in two files (keep version pins in sync between the
 
 ## Make targets
 
+`make help` lists every target. Grouped:
+
 | Target | Description |
 |--------|-------------|
 | `make help` | List all targets |
+| `make deps` / `make deps-act` | Verify local tooling (docker) / install `act` to `~/.local/bin` |
 | `make build` | Build the ActiveMQ broker image |
-| `make build-samba` | Build the Samba AD image |
-| `make scan` | Trivy CVE scan of the built broker image |
-| `make push` | Push the broker image (needs `DOCKER_LOGIN` + `DOCKER_PWD` in env) |
+| `make build-samba` | Build the Samba AD domain-controller image |
+| `make build-openldap` | Build the OpenLDAP (Symas) image |
+| `make build-hawtio` | Build the hawtio console image |
+| `make build-apacheds` | Build the Apache DS (AD-mimic) image |
 | `make up` / `make down` / `make logs` | Manage the default Compose stack |
+| `make lint` | hadolint the Dockerfiles (pinned image) |
+| `make mermaid-lint` | Validate the README Mermaid diagram |
+| `make static-check` | Composite static gate: `lint` + `mermaid-lint` (the CI `static-check` job) |
 | `make test` | Unit tests (bats — config templating) |
 | `make e2e` | Bring up stack + assert the LDAP authN/authZ contract |
 | `make e2e-samba` | Provision the Samba AD DC + assert it serves LDAP (`--privileged`) |
-| `make ci` | Local pipeline: lint + test + build + scan |
+| `make e2e-apacheds` | Build the Apache DS image + assert it serves the AD-schema seed over LDAP |
+| `make scan` | Trivy CVE scan of the built broker image (pinned image) |
+| `make push` | Push the broker image (needs `DOCKER_LOGIN` + `DOCKER_PWD` in env) |
+| `make search-openldap` / `make search-apacheds` | `ldapsearch` against a running backend |
+| `make renovate-validate` | Validate `renovate.json` against the Renovate schema |
+| `make clean` | Remove the locally built broker image |
+| `make ci` | Local pipeline: static-check + test + build + scan |
+| `make ci-run` | Run the act-runnable CI jobs (static-check + test) locally via `act` |
 
 ## CI/CD
 
-GitHub Actions ([`CI`](.github/workflows/docker-image.yml)) runs on every push and pull request to `master`:
+GitHub Actions ([`CI`](.github/workflows/ci.yml)) runs on every push and pull request to `master`:
 
 | Job | What it does |
 |-----|--------------|
-| `build` | Matrix-builds the four Dockerfiles (`6.2.6/`, `samba/`, `openldap/`, `hawtio/`), each followed by a blocking Trivy CVE scan |
+| `changes` | `dorny/paths-filter` gate — doc-only changes skip the heavy jobs below while `ci-pass` still goes green |
+| `static-check` | `make static-check` — hadolint over the five Dockerfiles + README Mermaid lint |
+| `docker` | Matrix-builds the five Dockerfiles (`6.2.6/`, `samba/`, `openldap/`, `hawtio/`, `apacheds-ad/`), each followed by a blocking Trivy CVE scan |
 | `test` | `bats` unit tests for the config-templating logic |
-| `e2e` | Builds the broker image, composes the OpenLDAP + ActiveMQ stack, and asserts the LDAP authN/authZ matrix |
+| `e2e` | Builds the broker image, composes the OpenLDAP + ActiveMQ stack, and asserts the LDAP authN/authZ matrix (queues + topics) and the Jolokia/console/hawtio logins |
 | `e2e-samba` | Provisions the Samba AD domain controller and asserts it serves the AD directory over LDAP (`--privileged`) |
+| `e2e-apacheds` | Builds the Apache DS image, runs it with the AD seed, and asserts an authenticated bind reads the Microsoft-schema directory |
+| `ci-pass` | Single aggregate status check (`if: always()`) — the one context to require in branch protection / Rulesets |
 
-The Trivy scan is a **blocking gate** (`exit-code: 1`): ActiveMQ 6.2.6 bundles patched Spring 6.2.x (clearing 4 of the 5 EOL CVEs 5.19.6 carried), the dormant `lib/camel` jars and the Canonical `pebble` base binary are removed, and the samba/openldap images apt-upgrade their bases (both scan clean). The single residual — `jetty-http` CVE-2026-2332, fixed only in Jetty 12 (6.2.6 bundles Jetty 11) — is documented and waived in [`.trivyignore`](.trivyignore). The gate fails on any new fixable CVE. No repository secrets are required. Dependency pins (Jetty via Maven, the Docker images, and GitHub Actions) are kept current by [Renovate](https://docs.renovatebot.com/). A weekly [`Cleanup old workflow runs`](.github/workflows/cleanup-runs.yml) workflow prunes old runs and caches.
+The Trivy scan is a **blocking gate** (`exit-code: 1`): ActiveMQ 6.2.6 bundles patched Spring 6.2.x (clearing 4 of the 5 EOL CVEs 5.19.6 carried), the dormant `lib/camel` jars and the Canonical `pebble` base binary are removed, and the samba/openldap/apacheds images apt-upgrade their bases (all scan clean). The single residual — `jetty-http` CVE-2026-2332, fixed only in Jetty 12 (6.2.6 bundles Jetty 11) — is documented and waived in [`.trivyignore`](.trivyignore). The gate fails on any new fixable CVE. No repository secrets are required. Dependency pins (Jetty via Maven, the Docker images, the tool images pinned in the `Makefile`, and GitHub Actions) are kept current by [Renovate](https://docs.renovatebot.com/). A weekly [`Cleanup old workflow runs`](.github/workflows/cleanup-runs.yml) workflow prunes old runs and caches.
 
 ## License
 

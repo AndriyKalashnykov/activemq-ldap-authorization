@@ -1,14 +1,25 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended",
-    ":dependencyDashboard"
+    "config:best-practices",
+    ":dependencyDashboard",
+    ":semanticCommitTypeAll(chore)"
   ],
   "labels": ["dependencies"],
+  "automerge": true,
+  "automergeType": "pr",
+  "automergeStrategy": "squash",
+  "platformAutomerge": true,
+  "ignoreTests": false,
+  "prConcurrentLimit": 50,
+  "prHourlyLimit": 0,
+  "vulnerabilityAlerts": {
+    "labels": ["security"]
+  },
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Jetty jars pinned in the ActiveMQ Dockerfile and scripts/set-env.sh",
+      "description": "JETTY_VER reference pin in the ActiveMQ Dockerfile and scripts/set-env.sh",
       "managerFilePatterns": [
         "/(^|/)Dockerfile$/",
         "/(^|/)set-env\\.sh$/"
@@ -18,6 +29,18 @@
       ],
       "depNameTemplate": "org.eclipse.jetty:jetty-util",
       "datasourceTemplate": "maven"
+    },
+    {
+      "customType": "regex",
+      "description": "Generic '# renovate:'-annotated single-value version pins (Makefile tool images, hawtio Maven jars)",
+      "managerFilePatterns": [
+        "/(^|/)Makefile$/",
+        "/(^|/)Dockerfile$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+(?:ARG |ENV )?[A-Za-z0-9_]+ *[?:]?= *[\"']?(?<currentValue>[^\"'\\s]+)"
+      ],
+      "datasourceTemplate": "{{{datasource}}}"
     }
   ],
   "packageRules": [
@@ -27,6 +50,16 @@
       "matchPackageNames": ["org.eclipse.jetty:jetty-util"],
       "matchUpdateTypes": ["major"],
       "enabled": false
+    },
+    {
+      "description": "Group all GitHub Actions digest bumps into a single PR",
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions"
+    },
+    {
+      "description": "Let major updates settle for a few days before opening the PR",
+      "matchUpdateTypes": ["major"],
+      "minimumReleaseAge": "3 days"
     }
   ]
 }
