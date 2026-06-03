@@ -24,6 +24,36 @@ C4Context
     Rel(ui, ldap, "Read/write", "LDAP")
 ```
 
+The **shared directory tree** every backend serves — users, role groups, the broker bind account, and the per-destination ACL entries the `cachedLDAPAuthorizationMap` reads (base DN `dc=activemq,dc=apache,dc=org`):
+
+```mermaid
+graph TD
+    root["dc=activemq,dc=apache,dc=org"] --> amq["ou=ActiveMQ"]
+    amq --> user["ou=User"]
+    amq --> grp["ou=Group"]
+    amq --> svc["ou=Services"]
+    amq --> dst["ou=Destination"]
+
+    user --> u1["uid=admin"]
+    user --> u2["uid=user"]
+    user --> u3["uid=client"]
+
+    grp --> g1["cn=admins<br/>member: uid=admin"]
+    grp --> g2["cn=users<br/>member: uid=user, uid=client"]
+
+    svc --> s1["cn=mqbroker<br/>broker bind DN"]
+
+    dst --> q["ou=Queue"]
+    dst --> t["ou=Topic"]
+    dst --> tmp["ou=Temp"]
+
+    q --> qa["cn=ADMINS.*<br/>admin/read/write: cn=admins"]
+    q --> qu["cn=USERS.*<br/>read/write: cn=users + cn=admins"]
+    t --> tn["cn=ADMINS.* / cn=USERS.*<br/>same per-group grants as Queue"]
+```
+
+Authentication matches a user under `ou=User` (`userSearchMatching=(uid={0})`); authorization checks the requesting user's `ou=Group` membership against the `cn=admin` / `cn=read` / `cn=write` grant entries under the matching destination (`ADMINS.*`, `USERS.*`) in `ou=Queue` / `ou=Topic` / `ou=Temp`.
+
 ## Table of Contents
 
 - [Tech Stack](#tech-stack)
