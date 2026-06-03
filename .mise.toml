@@ -1,0 +1,11 @@
+# mise-managed tools. Renovate's native `mise` manager tracks these versions
+# (no `# renovate:` comment or custom manager required).
+#
+# Scope note: this project is a Docker/bash/bats demo with no language
+# toolchain. The only mise-managed tool is `act`, used solely by the local
+# `make ci-run` convenience target. hadolint, trivy and mermaid-cli are
+# consumed via pinned `docker run` images in the Makefile (the documented
+# docker-run exception) rather than mise binaries. CI never runs `act`, so no
+# job needs `jdx/mise-action`.
+[tools]
+"aqua:nektos/act" = "0.2.89"
