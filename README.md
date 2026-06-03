@@ -5,7 +5,7 @@
 
 # ActiveMQ LDAP Authentication and Authorization
 
-Reference demo of delegating **Apache ActiveMQ 6.2.6** authentication and per-destination authorization to LDAP instead of a local user file. The **runtime surface** swaps between three directory backends — OpenLDAP, Apache DS (Microsoft AD mimic), and Samba AD — drives the broker's JAAS `LDAPLoginModule` and `cachedLDAPAuthorizationMap` from env-templated config, and secures the Jetty web console; the **delivery surface** adds a `bats` unit suite for the templating logic, an asserting Docker-Compose e2e (the full authN/authZ matrix), and a GitHub Actions pipeline that builds the four Dockerfiles with a blocking Trivy CVE scan, on Renovate-managed pins.
+Reference demo of delegating **Apache ActiveMQ 6.2.6** authentication and per-destination (queue/topic) authorization to LDAP instead of a local user file. The **runtime surface** swaps between three directory backends — OpenLDAP, Apache DS (Microsoft AD mimic), and Samba AD — drives the broker's JAAS `LDAPLoginModule` and `cachedLDAPAuthorizationMap` from env-templated config, and LDAP-secures both the Jetty web console and a hawtio management console through the same realm; the **delivery surface** adds a `bats` templating unit suite, three asserting e2e harnesses (the Docker-Compose authN/authZ matrix plus the broker's Jolokia endpoint, the Samba AD domain controller, and the Apache DS backend), and a GitHub Actions pipeline (hadolint static-check, a **five**-image Trivy-scanned build matrix, and a `ci-pass` aggregate gate) on Renovate-managed, `mise`-pinned tooling.
 
 ```mermaid
 C4Context
@@ -72,7 +72,7 @@ Start the default stack — OpenLDAP + ActiveMQ + phpLDAPadmin:
 make up                       # or: docker compose -f 6.2.6/docker-compose.yml up
 ```
 
-Then open the [web consoles](#web-consoles). Stop everything with `make down`.
+Once the broker is up, the ActiveMQ console answers on <http://127.0.0.1:8161/admin/> — logging in with the LDAP-backed `admin`/`admin` is the quickest proof the wiring works. From there, open the other [web consoles](#web-consoles), or run [`make e2e`](#verifying-authentication--authorization) to assert the full authN/authZ contract. Stop everything with `make down`.
 
 ## Prerequisites
 
@@ -93,6 +93,8 @@ The [C4 context diagram](#activemq-ldap-authentication-and-authorization) above 
 
 ## Web consoles
 
+With `make up` running, three web UIs are available. Logging into the **ActiveMQ** or **hawtio** console with the LDAP demo credentials confirms the broker delegates authentication to LDAP; **phpLDAPadmin** lets you browse and edit the directory entries directly (users, groups, the per-destination ACLs).
+
 | Console | URL | Credentials |
 |---------|-----|-------------|
 | ActiveMQ admin | http://127.0.0.1:8161/admin/ | login `admin` / password `admin` (LDAP) |
@@ -103,21 +105,26 @@ The [C4 context diagram](#activemq-ldap-authentication-and-authorization) above 
 
 ## LDAP backends
 
-The default stack uses OpenLDAP. Two alternative directory backends are provided:
+All three backends serve the **same directory contract** (the [tree above](#architecture)), so ActiveMQ's authentication and authorization behave identically whichever one it binds to — that is the point of the demo: only `LDAP_HOST` changes, never the broker config. The default `make up` stack uses **OpenLDAP**; the other two run standalone for inspection or as a drop-in directory.
+
+| Backend | Bring it up | Validate it serves the directory |
+|---------|-------------|----------------------------------|
+| **OpenLDAP** (default) | `make up` — part of the main stack, LDAP on `389` | `make search-openldap` runs `ldapwhoami` + `ldapsearch` and dumps the seed; `make e2e` asserts the full authN/authZ matrix end-to-end |
+| **Apache DS** (Microsoft-AD mimic) | `cd apacheds-ad && docker compose up` — LDAP on host `10389` | `make search-apacheds` runs `ldapsearch` and shows the AD-schema entries (`sAMAccountName`, `memberOf`); `make e2e-apacheds` asserts an authenticated `mqbroker` bind reads the seed |
+| **Samba AD** (real AD domain controller) | `make e2e-samba` — builds, provisions (`--privileged`), asserts, tears down | the `make e2e-samba` run **is** the validation (it asserts LDAP/LDAPS/Kerberos/GC ports, the provisioned domain, and an authenticated LDAPS search) |
+
+The `search-*` targets need a host `ldapsearch` (`apt install ldap-utils` / `brew install openldap`) and the matching backend running. To **browse** any backend visually, use **phpLDAPadmin** (see [Web consoles](#web-consoles)); against Apache DS/Samba bind as `cn=mqbroker,ou=Services,ou=ActiveMQ,dc=activemq,dc=apache,dc=org` / `admin`.
+
+Run the Samba domain controller **interactively** (instead of through the e2e harness) when you want a long-lived DC to poke at:
 
 ```bash
-# Apache DS (mimics Microsoft AD; LDAP on host port 10389)
-cd apacheds-ad && docker compose up
-
-# Samba AD domain controller
 cd samba
 docker build -t dev-ad -f Dockerfile .
 docker run --name dev-ad --hostname ak --privileged -p 636:636 \
   -e SMB_ADMIN_PASSWORD='admin123!' \
   -v "$PWD/:/opt/ad-scripts" -v "$PWD/samba-data:/var/lib/samba" dev-ad
+# then: ldapsearch -x -H ldaps://localhost:636 -D 'Administrator@ak' -w 'admin123!' -b 'dc=ak' '(objectClass=user)'
 ```
-
-For Apache DS, log in to phpLDAPadmin with DN `cn=mqbroker,ou=Services,ou=ActiveMQ,dc=activemq,dc=apache,dc=org` / password `admin`.
 
 ## Verifying authentication & authorization
 
