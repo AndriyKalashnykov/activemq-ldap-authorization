@@ -12,7 +12,7 @@ FROM tomcat:11.0-jre25-temurin-jammy
 ARG HAWTIO_VERSION=5.2.0
 ARG ACTIVEMQ_JAAS_VERSION=6.2.6
 # renovate: datasource=maven depName=org.slf4j:slf4j-api
-ARG SLF4J_VERSION=2.0.17
+ARG SLF4J_VERSION=2.0.18
 
 # apt upgrade clears base CVEs (blocking Trivy gate). curl fetches the WAR + the
 # two jars that put org.apache.activemq.jaas.LDAPLoginModule + GroupPrincipal on
