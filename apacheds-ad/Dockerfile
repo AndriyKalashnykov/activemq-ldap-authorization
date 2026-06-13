@@ -11,11 +11,14 @@ FROM eclipse-temurin:25.0.3_9-jre
 
 LABEL maintainer="AndriyKalashnykov@gmail.com"
 
-# Pinned, reproducible release artifact. LDAP_SERVER_RELEASE is the git tag in
-# the ldap-server repo; the SHA256 pins the exact jar so a moved/rebuilt tag is
-# detected at build time (the release tag is mutable). Bump both together.
-ARG LDAP_SERVER_RELEASE=latest
-ARG LDAP_SERVER_JAR_SHA256=9dfee37b955097cbc90e5555252e59dde85b5240175433f4e2178f7559fcdb98
+# Pinned, reproducible release artifact. LDAP_SERVER_RELEASE is an *immutable*
+# release tag in the ldap-server repo (a dated snapshot, NOT the mutable
+# `latest` tag — `latest` is re-uploaded on every upstream rebuild, which would
+# silently break the SHA256 gate below). The SHA256 pins the exact jar. To bump
+# to a newer ldap-server build: cut a new immutable dated release there, then
+# bump both values here together.
+ARG LDAP_SERVER_RELEASE=2026-06-04
+ARG LDAP_SERVER_JAR_SHA256=3c24360c8a5b8c93f48a3c9831261eed3430251b0b4fb0bd42f8072af6bd141a
 ARG LDAP_SERVER_PORT=10389
 ARG APP_UID=10389
 ARG APP_GID=10389
@@ -24,7 +27,8 @@ ENV LDAP_SERVER_PORT=${LDAP_SERVER_PORT}
 
 # apt upgrade clears base CVEs (the CI Trivy scan is a blocking gate); curl
 # fetches the pinned release jar and is purged afterwards. The sha256sum -c
-# gate fails the build if the (mutable) release tag's artifact ever changes.
+# gate fails the build if the pinned immutable tag's artifact ever changes
+# (a tripwire against tag tampering / a wrong SHA bump).
 # A non-root service account owns /ldap; the in-memory directory needs no
 # writable data dir.
 RUN set -eux; \

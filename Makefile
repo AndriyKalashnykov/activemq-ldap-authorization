@@ -136,5 +136,5 @@ ci-run: deps-act ## Run the act-runnable CI jobs (static-check + test) locally v
 	@# under act. The docker (matrix build + Trivy), e2e, e2e-samba and
 	@# e2e-apacheds jobs need real Docker / --privileged and are skipped here.
 	@# `act` runs via mise (pinned in .mise.toml).
-	mise exec -- act push -W .github/workflows/docker-image.yml -j static-check -P ubuntu-latest=$(ACT_RUNNER_IMAGE)
-	mise exec -- act push -W .github/workflows/docker-image.yml -j test -P ubuntu-latest=$(ACT_RUNNER_IMAGE)
+	mise exec -- act push -W .github/workflows/ci.yml -j static-check -P ubuntu-latest=$(ACT_RUNNER_IMAGE)
+	mise exec -- act push -W .github/workflows/ci.yml -j test -P ubuntu-latest=$(ACT_RUNNER_IMAGE)
