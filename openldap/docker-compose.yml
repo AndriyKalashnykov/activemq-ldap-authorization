@@ -25,7 +25,7 @@ services:
         max-file: "5"
   ldap-account-manager:
     # Maintained LAM image moved from Docker Hub (frozen at 8.3, 2023) to GHCR.
-    image: ghcr.io/ldapaccountmanager/lam:9.5
+    image: ghcr.io/ldapaccountmanager/lam:9.6@sha256:9e0aefbc61323686d30b1385a8557fb4d428a33343ed267e87d9556fcd5b437c
     restart: unless-stopped
     hostname: lam
     container_name: lam    
