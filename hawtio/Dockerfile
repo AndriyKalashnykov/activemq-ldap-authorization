@@ -9,7 +9,7 @@ FROM tomcat:11.0-jre25-temurin-jammy
 # in renovate.json). ACTIVEMQ_JAAS_VERSION is intentionally NOT annotated — it is
 # coupled to the broker's ActiveMQ version (which is itself manually bumped).
 # renovate: datasource=maven depName=io.hawt:hawtio-default
-ARG HAWTIO_VERSION=5.2.0
+ARG HAWTIO_VERSION=5.2.1
 ARG ACTIVEMQ_JAAS_VERSION=6.2.6
 # renovate: datasource=maven depName=org.slf4j:slf4j-api
 ARG SLF4J_VERSION=2.0.18
