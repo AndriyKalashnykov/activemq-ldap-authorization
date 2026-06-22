@@ -35,12 +35,24 @@ RUN if [ "$SHA512_VAL" != "$(sha512sum $ACTIVEMQ-bin.tar.gz | awk '{print($1)}')
 # activemq.xml declares no <camelContext>/import, so the camel route engine is
 # never loaded. camel 2.x is EOL (CVE-2020-11971 has no 2.x fix); deleting the
 # dormant jars eliminates the finding outright rather than suppressing it.
+#
+# lib/optional/{shiro-core,shiro-spring}-2.2.0.jar + activemq-shiro-6.2.6.jar are
+# removed for the same reason: Shiro is ActiveMQ's OPTIONAL security module,
+# active only when activemq.xml declares a <shiro>/shiroSecurityManager bean.
+# This demo authenticates via JAAS (jaasAuthenticationPlugin + LDAPLoginModule),
+# never Shiro, so the module is never loaded. shiro-core 2.2.0 carries
+# CVE-2026-49268 (HIGH, LDAP DN injection); deleting the dormant module
+# eliminates the finding outright rather than waiving it. Verified by the full
+# e2e auth/authz contract passing with these jars absent.
 RUN tar xzf $ACTIVEMQ-bin.tar.gz -C  /opt && \
     ln -s /opt/$ACTIVEMQ $ACTIVEMQ_HOME && \
     useradd -r -M -d $ACTIVEMQ_HOME activemq && \
     chown -R activemq:activemq /opt/$ACTIVEMQ && \
     chown -h activemq:activemq $ACTIVEMQ_HOME && \
-    rm -rf /opt/$ACTIVEMQ/lib/camel
+    rm -rf /opt/$ACTIVEMQ/lib/camel && \
+    rm -f /opt/$ACTIVEMQ/lib/optional/shiro-core-*.jar \
+          /opt/$ACTIVEMQ/lib/optional/shiro-spring-*.jar \
+          /opt/$ACTIVEMQ/lib/optional/activemq-shiro-*.jar
 
 USER activemq
 
