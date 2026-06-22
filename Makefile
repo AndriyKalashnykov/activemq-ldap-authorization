@@ -27,7 +27,7 @@ MERMAID_CLI_VERSION ?= 11.15.0
 # renovate: datasource=docker depName=hadolint/hadolint
 HADOLINT_VERSION ?= v2.14.0
 # renovate: datasource=docker depName=aquasec/trivy
-TRIVY_VERSION    ?= 0.71.1
+TRIVY_VERSION    ?= 0.71.2
 # act runner image (catthehacker), pinned to a DATED (immutable) tag — the
 # floating `act-22.04` tag is republished weekly. Bump by hand: list current
 # dated tags at hub.docker.com/r/catthehacker/ubuntu/tags?name=act-22.04-
