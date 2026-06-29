@@ -23,7 +23,7 @@ TRIVY_SEVERITY   ?= CRITICAL,HIGH
 # version-manager policy (same as plantuml). `act` is the one mise-managed tool
 # (see .mise.toml); it is only used by the local `make ci-run` target.
 # renovate: datasource=docker depName=minlag/mermaid-cli
-MERMAID_CLI_VERSION ?= 11.15.0
+MERMAID_CLI_VERSION ?= 11.16.0
 # renovate: datasource=docker depName=hadolint/hadolint
 HADOLINT_VERSION ?= v2.14.0
 # renovate: datasource=docker depName=aquasec/trivy
