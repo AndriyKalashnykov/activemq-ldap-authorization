@@ -12,12 +12,19 @@ ENV ACTIVEMQ=apache-activemq-$ACTIVEMQ_VER
 ENV ACTIVEMQ_TCP=61616 ACTIVEMQ_AMQP=5672 ACTIVEMQ_STOMP=61613 ACTIVEMQ_MQTT=1883 ACTIVEMQ_WS=61614 ACTIVEMQ_UI=8161
 ENV SHA512_VAL=2b1e0c0e7336d86475c6a2149326ef9055542f04d34c3c6f4c18a0d79e2ef41dd033bbecfef2abe9117dd34b767c5c9714e349305ffc0117e210852359277172
 
-# Patched jackson version that replaces the CVE-bearing jars bundled in the
+# Patched jackson versions that replace the CVE-bearing jars bundled in the
 # ActiveMQ 6.2.6 tarball (see the jar-swap RUN block below). Renovate tracks
-# this ARG via the generic customManager (datasource=maven). The two sha256
-# pins below are version-specific — bump them together with JACKSON_VERSION.
+# these ARGs via the generic customManager (datasource=maven). No separate
+# sha256 pin: Maven Central versioned coordinates are immutable + HTTPS, the
+# same trust model the activemq-jaas / slf4j / hawtio.war downloads in this
+# project already rely on — and a hardcoded sha would break Renovate's auto
+# bump (it can't update the digest). JACKSON_VERSION drives databind + core;
+# annotations has a coarser scheme (no patch releases) so it is tracked
+# separately. All three are bumped as a unit by the jackson monorepo group.
 # renovate: datasource=maven depName=com.fasterxml.jackson.core:jackson-databind
-ARG JACKSON_VERSION=2.21.4
+ARG JACKSON_VERSION=2.22.0
+# renovate: datasource=maven depName=com.fasterxml.jackson.core:jackson-annotations
+ARG JACKSON_ANNOTATIONS_VERSION=2.22
 
 # curl is installed explicitly: the eclipse-temurin:25 base (Ubuntu 24.04)
 # dropped curl from the image, unlike the older :11-jre (Jammy) base that
@@ -53,13 +60,12 @@ RUN if [ "$SHA512_VAL" != "$(sha512sum $ACTIVEMQ-bin.tar.gz | awk '{print($1)}')
 # e2e auth/authz contract passing with these jars absent.
 #
 # jackson swap: ActiveMQ 6.2.6 bundles jackson-databind 2.21.1
-# (CVE-2026-54512/54513, HIGH); it is replaced with the patched 2.21.4 (+ the
-# matching jackson-core 2.21.4 that databind 2.21.4 depends on) from Maven
-# Central, each SHA256-verified. jackson-annotations 2.21 is left as-is (not
-# flagged; coarser version scheme with no 2.21.4 release, and databind 2.21.4
-# depends on annotations 2.21). Re-evaluate when ACTIVEMQ_VER is bumped — the
-# tarball may then ship a patched jackson already. The two sha256 pins are
-# version-specific: bump them with JACKSON_VERSION (the ARG above).
+# (CVE-2026-54512/54513, HIGH). All three bundled jackson jars are replaced as a
+# consistent set with the Renovate-tracked versions (databind + core =
+# JACKSON_VERSION, annotations = JACKSON_ANNOTATIONS_VERSION) from Maven Central
+# — globbed removal so a future tarball can't leave a stale copy. Re-evaluate
+# when ACTIVEMQ_VER is bumped: the new tarball may ship a patched jackson, in
+# which case this override can be dropped.
 RUN tar xzf $ACTIVEMQ-bin.tar.gz -C  /opt && \
     ln -s /opt/$ACTIVEMQ $ACTIVEMQ_HOME && \
     useradd -r -M -d $ACTIVEMQ_HOME activemq && \
@@ -68,13 +74,14 @@ RUN tar xzf $ACTIVEMQ-bin.tar.gz -C  /opt && \
           /opt/$ACTIVEMQ/lib/optional/shiro-spring-*.jar \
           /opt/$ACTIVEMQ/lib/optional/activemq-shiro-*.jar && \
     rm -f /opt/$ACTIVEMQ/lib/jackson-databind-*.jar \
-          /opt/$ACTIVEMQ/lib/jackson-core-*.jar && \
+          /opt/$ACTIVEMQ/lib/jackson-core-*.jar \
+          /opt/$ACTIVEMQ/lib/jackson-annotations-*.jar && \
     curl -fsSLo /opt/$ACTIVEMQ/lib/jackson-databind-${JACKSON_VERSION}.jar \
          "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/${JACKSON_VERSION}/jackson-databind-${JACKSON_VERSION}.jar" && \
     curl -fsSLo /opt/$ACTIVEMQ/lib/jackson-core-${JACKSON_VERSION}.jar \
          "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/${JACKSON_VERSION}/jackson-core-${JACKSON_VERSION}.jar" && \
-    echo "3888e9e69ab66fbacaacc9aea0e9ffbf15368288e4aca468b024dba11c09fbf9  /opt/$ACTIVEMQ/lib/jackson-databind-${JACKSON_VERSION}.jar" | sha256sum -c - && \
-    echo "4b40a06396f239f8de2da57419adde6e94e5edc18a2171d471ea05eeed4e5c2d  /opt/$ACTIVEMQ/lib/jackson-core-${JACKSON_VERSION}.jar" | sha256sum -c - && \
+    curl -fsSLo /opt/$ACTIVEMQ/lib/jackson-annotations-${JACKSON_ANNOTATIONS_VERSION}.jar \
+         "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/${JACKSON_ANNOTATIONS_VERSION}/jackson-annotations-${JACKSON_ANNOTATIONS_VERSION}.jar" && \
     chown -R activemq:activemq /opt/$ACTIVEMQ && \
     chown -h activemq:activemq $ACTIVEMQ_HOME
 

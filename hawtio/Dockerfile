@@ -5,10 +5,6 @@
 # (/api/jolokia), which is itself LDAP-protected.
 FROM tomcat:11.0-jre25-temurin-jammy
 
-# bash + pipefail so the `… | sha256sum -c -` jackson-jar verification pipe in the
-# RUN below fails correctly (DL4006), matching the broker Dockerfile's shell setup.
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
 # Pinned, Renovate-trackable versions (via the generic # renovate: customManager
 # in renovate.json). ACTIVEMQ_JAAS_VERSION is intentionally NOT annotated — it is
 # coupled to the broker's ActiveMQ version (which is itself manually bumped).
@@ -19,16 +15,18 @@ ARG ACTIVEMQ_JAAS_VERSION=6.2.6
 ARG SLF4J_VERSION=2.0.18
 # hawtio 5.2.1's WAR bundles jackson-databind 2.19.2 (WEB-INF/lib), which carries
 # CVE-2026-54512 + CVE-2026-54513 (both HIGH; the 2.19 line has NO fix). No hawtio
-# release ships patched jackson yet, so the RUN below repacks the WAR with patched
-# 2.21.4 databind + matching core 2.21.4 + annotations 2.21 (all three must move as
-# a consistent set — mixing 2.19/2.21 risks NoSuchMethodError). Re-evaluate when
-# HAWTIO_VERSION bumps to a release that bundles patched jackson.
-# JACKSON_VERSION drives BOTH jackson-databind AND jackson-core (annotations is
-# separate — it has no .4 release, latest is 2.21).
+# release ships patched jackson yet, so the RUN below repacks the WAR with the
+# patched, Renovate-tracked jackson set (all three must move together — mixing
+# minors risks NoSuchMethodError). Re-evaluate when HAWTIO_VERSION bumps to a
+# release that bundles patched jackson. No sha256 pin: Maven Central versioned
+# coordinates are immutable + HTTPS (same trust model as the WAR/jaas/slf4j
+# downloads above), and a hardcoded digest would break Renovate's auto bump.
+# JACKSON_VERSION drives databind + core; annotations is separate (coarser
+# scheme, no patch releases).
 # renovate: datasource=maven depName=com.fasterxml.jackson.core:jackson-databind
-ARG JACKSON_VERSION=2.21.4
+ARG JACKSON_VERSION=2.22.0
 # renovate: datasource=maven depName=com.fasterxml.jackson.core:jackson-annotations
-ARG JACKSON_ANNOTATIONS_VERSION=2.21
+ARG JACKSON_ANNOTATIONS_VERSION=2.22
 
 # apt upgrade clears base CVEs (blocking Trivy gate). curl fetches the WAR + the
 # two jars that put org.apache.activemq.jaas.LDAPLoginModule + GroupPrincipal on
@@ -57,10 +55,6 @@ RUN set -eux; \
       "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/${JACKSON_VERSION}/jackson-core-${JACKSON_VERSION}.jar"; \
     curl -fsSLo "WEB-INF/lib/jackson-annotations-${JACKSON_ANNOTATIONS_VERSION}.jar" \
       "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/${JACKSON_ANNOTATIONS_VERSION}/jackson-annotations-${JACKSON_ANNOTATIONS_VERSION}.jar"; \
-    # sha256 coupled to JACKSON_VERSION / JACKSON_ANNOTATIONS_VERSION — update on a Renovate bump. \
-    echo "3888e9e69ab66fbacaacc9aea0e9ffbf15368288e4aca468b024dba11c09fbf9  WEB-INF/lib/jackson-databind-${JACKSON_VERSION}.jar" | sha256sum -c -; \
-    echo "4b40a06396f239f8de2da57419adde6e94e5edc18a2171d471ea05eeed4e5c2d  WEB-INF/lib/jackson-core-${JACKSON_VERSION}.jar" | sha256sum -c -; \
-    echo "53ca085f4a150f703f49e1aabd935bd03b43e1ea3d55d135438292af22cef56b  WEB-INF/lib/jackson-annotations-${JACKSON_ANNOTATIONS_VERSION}.jar" | sha256sum -c -; \
     rm -f ../hawtio.war; zip -qr ../hawtio.war .; cd ..; rm -rf hawtio-x; \
     apt-get purge -y curl unzip zip; apt-get autoremove -y; apt-get clean; rm -rf /var/lib/apt/lists/*
 
