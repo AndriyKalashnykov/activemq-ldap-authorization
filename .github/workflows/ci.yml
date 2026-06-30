@@ -64,7 +64,12 @@ jobs:
 
   static-check:
     needs: changes
-    if: needs.changes.outputs.code == 'true'
+    # Runs when code changed (branch/PR) OR on any tag push (release): a release
+    # build must be lint-clean before it is built + scanned. The `!cancelled()`
+    # status function is required so this still runs on a tag push, where the
+    # `changes` job is skipped (a plain `if:` would inherit an implicit
+    # success(changes) gate and skip too).
+    if: ${{ !cancelled() && (needs.changes.outputs.code == 'true' || github.ref_type == 'tag') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -73,9 +78,12 @@ jobs:
         run: make static-check
 
   # Build all five images + Trivy CVE scan. Gated to TAG pushes only (release
-  # time) — see the `on:` block. Self-contained (does its own checkout); it does
-  # not depend on `changes`/`static-check`, which are skipped on tag pushes.
+  # time) — see the `on:` block. Runs AFTER static-check (which also runs on
+  # tags): lint must pass before a release is built + scanned. The plain `if:`
+  # (no status function) keeps the implicit success(static-check) gate, so a
+  # lint failure on the tag skips the build rather than scanning bad images.
   docker:
+    needs: static-check
     if: github.event_name == 'push' && github.ref_type == 'tag'
     runs-on: ubuntu-latest
     strategy:
