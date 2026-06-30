@@ -79,12 +79,16 @@ jobs:
 
   # Build all five images + Trivy CVE scan. Gated to TAG pushes only (release
   # time) — see the `on:` block. Runs AFTER static-check (which also runs on
-  # tags): lint must pass before a release is built + scanned. The plain `if:`
-  # (no status function) keeps the implicit success(static-check) gate, so a
-  # lint failure on the tag skips the build rather than scanning bad images.
+  # tags): lint must pass before a release is built + scanned. The `if:` MUST use
+  # a status function (`!cancelled()`) + an explicit `needs.static-check.result`
+  # check: a plain `if:` here inherits an implicit success() gate that — because
+  # static-check is ITSELF conditionally gated (it runs via `!cancelled()`) —
+  # evaluates such that docker is SKIPPED on the tag (observed empirically). The
+  # explicit form runs docker iff static-check succeeded and it's a tag push, so
+  # a lint failure still skips the build rather than scanning bad images.
   docker:
     needs: static-check
-    if: github.event_name == 'push' && github.ref_type == 'tag'
+    if: ${{ !cancelled() && needs.static-check.result == 'success' && github.event_name == 'push' && github.ref_type == 'tag' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
