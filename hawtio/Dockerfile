@@ -26,9 +26,9 @@ ARG SLF4J_VERSION=2.0.18
 # JACKSON_VERSION drives BOTH jackson-databind AND jackson-core (annotations is
 # separate — it has no .4 release, latest is 2.21).
 # renovate: datasource=maven depName=com.fasterxml.jackson.core:jackson-databind
-ARG JACKSON_VERSION=2.21.4
+ARG JACKSON_VERSION=2.22.0
 # renovate: datasource=maven depName=com.fasterxml.jackson.core:jackson-annotations
-ARG JACKSON_ANNOTATIONS_VERSION=2.21
+ARG JACKSON_ANNOTATIONS_VERSION=2.22
 
 # apt upgrade clears base CVEs (blocking Trivy gate). curl fetches the WAR + the
 # two jars that put org.apache.activemq.jaas.LDAPLoginModule + GroupPrincipal on

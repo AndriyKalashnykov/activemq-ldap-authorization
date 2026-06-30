@@ -17,7 +17,7 @@ ENV SHA512_VAL=2b1e0c0e7336d86475c6a2149326ef9055542f04d34c3c6f4c18a0d79e2ef41dd
 # this ARG via the generic customManager (datasource=maven). The two sha256
 # pins below are version-specific — bump them together with JACKSON_VERSION.
 # renovate: datasource=maven depName=com.fasterxml.jackson.core:jackson-databind
-ARG JACKSON_VERSION=2.21.4
+ARG JACKSON_VERSION=2.22.0
 
 # curl is installed explicitly: the eclipse-temurin:25 base (Ubuntu 24.04)
 # dropped curl from the image, unlike the older :11-jre (Jammy) base that
