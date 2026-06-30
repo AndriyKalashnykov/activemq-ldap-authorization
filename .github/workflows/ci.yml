@@ -3,6 +3,13 @@ name: CI
 on:
   push:
     branches: [ master ]
+    # Image build + Trivy CVE scan (the `docker` job) runs ONLY on tag pushes —
+    # i.e. at release time. A freshly-disclosed CVE in a base image or bundled
+    # jar would otherwise red-X every unrelated PR (a vuln-DB drift gate's inputs
+    # span the images, not the PR diff); gating the scan on tags keeps PR CI
+    # about the change under review. Functional correctness (incl. image builds)
+    # is still gated on every PR via the e2e jobs, which build the images.
+    tags: [ '*' ]
   pull_request:
     branches: [ master ]
 
@@ -20,6 +27,10 @@ jobs:
   # jobs. Doc-only changes (README, LICENSE, .md) skip the heavy jobs but still
   # let `ci-pass` go green so a Repository-Ruleset required check is satisfied.
   changes:
+    # Path filtering is only meaningful for branch/PR events. Tag pushes run the
+    # release-time `docker` scan unconditionally, so `changes` (and the
+    # branch/PR-only jobs that depend on it) are skipped on tags.
+    if: github.ref_type != 'tag'
     runs-on: ubuntu-latest
     outputs:
       code: ${{ steps.filter.outputs.code }}
@@ -61,9 +72,11 @@ jobs:
       - name: Static check
         run: make static-check
 
+  # Build all five images + Trivy CVE scan. Gated to TAG pushes only (release
+  # time) — see the `on:` block. Self-contained (does its own checkout); it does
+  # not depend on `changes`/`static-check`, which are skipped on tag pushes.
   docker:
-    needs: [changes, static-check]
-    if: needs.changes.outputs.code == 'true'
+    if: github.event_name == 'push' && github.ref_type == 'tag'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -103,12 +116,15 @@ jobs:
         image-ref: ${{ matrix.image }}
         severity: CRITICAL,HIGH
         ignore-unfixed: true
-        # BLOCKING gate. ActiveMQ 6.2.6 bundles patched Spring 6.2.x, clearing 4
-        # of the 5 EOL CVEs 5.19.6 carried; dormant camel jars + the Canonical
-        # `pebble` base binary are removed; samba/openldap/apacheds apt-upgrade
-        # their bases (all scan clean). The single residual — jetty-http
-        # CVE-2026-2332, fixed only in Jetty 12 (6.2.6 bundles Jetty 11) — is
-        # documented + waived in .trivyignore. Hard-fails on any new fixable CVE.
+        # BLOCKING release-time gate (this job runs on tag pushes only).
+        # ActiveMQ 6.2.6 bundles patched Spring 6.2.x, clearing 4 of the 5 EOL
+        # CVEs 5.19.6 carried; dormant camel/shiro jars + the Canonical `pebble`
+        # base binary are removed; the bundled jackson-databind is upgraded to a
+        # patched release in 6.2.6/Dockerfile + hawtio/Dockerfile;
+        # samba/openldap/apacheds apt-upgrade their bases (all scan clean). The
+        # single residual — jetty-http CVE-2026-2332, fixed only in Jetty 12
+        # (6.2.6 bundles Jetty 11) — is documented + waived in .trivyignore.
+        # Hard-fails the release on any new fixable CVE.
         exit-code: '1'
         trivyignores: .trivyignore
         vuln-type: os,library
@@ -125,7 +141,9 @@ jobs:
       run: make test
 
   e2e:
-    needs: [changes, docker, test]
+    # Does NOT depend on `docker` (now tag-only): e2e builds the broker image
+    # itself below, so it gates image build + functional correctness on every PR.
+    needs: [changes, test]
     if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     steps:
