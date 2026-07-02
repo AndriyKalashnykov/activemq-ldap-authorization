@@ -1,0 +1,4 @@
+# PlantUML renderer-version sentinel — a re-render trigger, not a tracked artifact.
+# Its filename encodes PLANTUML_VERSION so a renderer bump forces a full re-render
+# (see the Makefile `diagrams` targets + /architecture-diagrams skill).
+docs/diagrams/out/.plantuml-*.stamp

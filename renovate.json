@@ -57,6 +57,12 @@
       "groupName": "github-actions"
     },
     {
+      "description": "plantuml/plantuml renders the committed docs/diagrams/*.png. A bump forces a re-render (Makefile version-stamp prereq) that Renovate cannot perform, so its PR would fail diagrams-check and stand RED under automerge. Disable automerge so a human runs `make diagrams` + commits the new PNG on the bump PR (the shepherded-bump option).",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["plantuml/plantuml"],
+      "automerge": false
+    },
+    {
       "description": "Let major updates settle for a few days before opening the PR",
       "matchUpdateTypes": ["major"],
       "minimumReleaseAge": "3 days"

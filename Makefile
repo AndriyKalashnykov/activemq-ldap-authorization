@@ -28,6 +28,13 @@ MERMAID_CLI_VERSION ?= 11.16.0
 HADOLINT_VERSION ?= v2.14.0
 # renovate: datasource=docker depName=aquasec/trivy
 TRIVY_VERSION    ?= 0.72.0
+# plantuml/plantuml renders the committed C4 diagram PNG (docs/diagrams/). Renovate
+# tracks it, but its automerge is DISABLED in renovate.json: a bump forces a
+# re-render (via the version-stamp prereq below) that the bot cannot regenerate,
+# so a human runs `make diagrams` + commits the new PNG on the bump PR. See the
+# "diagrams" targets and renovate.json.
+# renovate: datasource=docker depName=plantuml/plantuml
+PLANTUML_VERSION ?= 1.2026.6
 # act runner image (catthehacker), pinned to a DATED (immutable) tag — the
 # floating `act-22.04` tag is republished weekly. Bump by hand: list current
 # dated tags at hub.docker.com/r/catthehacker/ubuntu/tags?name=act-22.04-
@@ -39,7 +46,17 @@ SAMBA_IMAGE_REF := $(if $(DOCKER_LOGIN),$(DOCKER_LOGIN)/,)$(SAMBA_IMAGE):$(SAMBA
 APACHEDS_IMAGE_REF := $(if $(DOCKER_LOGIN),$(DOCKER_LOGIN)/,)$(APACHEDS_IMAGE):$(APACHEDS_VER)
 SAMBA_DOCKERFILE := samba/Dockerfile
 
-.PHONY: help deps deps-act lint mermaid-lint static-check build build-samba build-openldap build-hawtio build-apacheds scan push up down logs test e2e e2e-samba e2e-apacheds \
+DIAGRAM_DIR   := docs/diagrams
+DIAGRAM_SRC   := $(wildcard $(DIAGRAM_DIR)/*.puml)
+DIAGRAM_OUT   := $(patsubst $(DIAGRAM_DIR)/%.puml,$(DIAGRAM_DIR)/out/%.png,$(DIAGRAM_SRC))
+# Sentinel whose FILENAME encodes PLANTUML_VERSION: a renderer bump changes the
+# name, so the previous stamp no longer satisfies the PNG prereq → every diagram
+# re-renders. Without this, `make diagrams` no-ops on an image bump (no .puml
+# changed) and diagrams-check passes on stale PNGs. Gitignored (a trigger, not an
+# artifact). See /architecture-diagrams "Renderer-version as a Make prerequisite".
+DIAGRAM_STAMP := $(DIAGRAM_DIR)/out/.plantuml-$(PLANTUML_VERSION).stamp
+
+.PHONY: help deps deps-act lint mermaid-lint diagrams diagrams-clean diagrams-check static-check build build-samba build-openldap build-hawtio build-apacheds scan push up down logs test e2e e2e-samba e2e-apacheds \
         search-openldap search-apacheds clean ci ci-run renovate-validate
 
 help: ## Show this help
@@ -65,6 +82,31 @@ mermaid-lint: deps ## Validate the README Mermaid diagram(s) via minlag/mermaid-
 	@docker run --rm -e PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
 		-v "$$PWD:/data:ro" -w /home/mermaidcli \
 		minlag/mermaid-cli:$(MERMAID_CLI_VERSION) -i /data/README.md -o /home/mermaidcli/out.md
+
+diagrams: $(DIAGRAM_OUT) ## Render the PlantUML C4 diagram(s) to PNG (pinned plantuml image)
+
+$(DIAGRAM_DIR)/out/%.png: $(DIAGRAM_DIR)/%.puml $(DIAGRAM_STAMP)
+	docker run --rm -v "$(CURDIR)/$(DIAGRAM_DIR):/work" -w /work \
+		--user $$(id -u):$$(id -g) \
+		-e HOME=/tmp -e _JAVA_OPTIONS=-Duser.home=/tmp \
+		plantuml/plantuml:$(PLANTUML_VERSION) -tpng -o out $(notdir $<)
+
+$(DIAGRAM_STAMP):
+	@mkdir -p $(DIAGRAM_DIR)/out
+	@rm -f $(DIAGRAM_DIR)/out/.plantuml-*.stamp
+	@touch $@
+
+diagrams-clean: ## Remove rendered diagram artefacts
+	rm -rf $(DIAGRAM_DIR)/out
+
+diagrams-check: diagrams ## Verify committed diagrams match current source (CI drift gate)
+	@# `git status --porcelain --untracked-files=all` (NOT `git diff --exit-code`):
+	@# git diff ignores UNTRACKED files, so a brand-new .puml whose freshly-rendered
+	@# PNG is still untracked would pass green while the render was never committed.
+	@if [ -n "$$(git status --porcelain --untracked-files=all -- $(DIAGRAM_DIR)/out)" ]; then \
+		echo "ERROR: Diagram source changed but rendered output not updated/committed. Run 'make diagrams' and commit."; \
+		git status --short --untracked-files=all -- $(DIAGRAM_DIR)/out; exit 1; \
+	fi
 
 build: deps ## Build the ActiveMQ broker image ($(ACTIVEMQ_VER)/Dockerfile)
 	DOCKER_BUILDKIT=1 docker build -f $(ACTIVEMQ_VER)/Dockerfile -t $(ACTIVEMQ_IMAGE) $(ACTIVEMQ_VER)
@@ -126,7 +168,7 @@ clean: ## Remove the locally built broker image
 renovate-validate: ## Validate renovate.json against the Renovate schema
 	npx --yes --package renovate -- renovate-config-validator
 
-static-check: deps lint mermaid-lint ## Composite static gate: hadolint + README Mermaid lint
+static-check: deps lint mermaid-lint diagrams-check ## Composite static gate: hadolint + README Mermaid lint + C4 diagram drift
 	@echo "Static check passed."
 
 ci: deps static-check test build scan ## Local CI pipeline: static-check, bats unit tests, build, scan

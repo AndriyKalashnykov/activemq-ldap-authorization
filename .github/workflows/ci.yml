@@ -61,6 +61,7 @@ jobs:
               - '.trivyignore'
               - '.github/workflows/**'
               - 'CLAUDE.md'   # project config, not docs — must trigger CI (§15c)
+              - 'docs/diagrams/**/*.puml'   # C4 source — must run diagrams-check drift gate
 
   static-check:
     needs: changes

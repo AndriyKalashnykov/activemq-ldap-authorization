@@ -5,24 +5,11 @@
 
 # ActiveMQ LDAP Authentication and Authorization
 
-Reference demo of delegating **Apache ActiveMQ 6.2.6** authentication and per-destination (queue/topic) authorization to LDAP instead of a local user file. The **runtime surface** swaps between three directory backends — OpenLDAP, Apache DS (Microsoft AD mimic), and Samba AD — drives the broker's JAAS `LDAPLoginModule` and `cachedLDAPAuthorizationMap` from env-templated config, and LDAP-secures both the Jetty web console and a hawtio management console through the same realm; the **delivery surface** adds a `bats` templating unit suite, three asserting e2e harnesses (the Docker-Compose authN/authZ matrix plus the broker's Jolokia endpoint, the Samba AD domain controller, and the Apache DS backend), and a GitHub Actions pipeline (hadolint static-check, a **five**-image Trivy-scanned build matrix, and a `ci-pass` aggregate gate) on Renovate-managed, `mise`-pinned tooling.
+Reference demo of delegating **Apache ActiveMQ 6.2.6** authentication and per-destination (queue/topic) authorization to LDAP instead of a local user file. The **runtime surface** swaps between three directory backends — OpenLDAP, Apache DS (Microsoft AD mimic), and Samba AD — drives the broker's JAAS `LDAPLoginModule` and `cachedLDAPAuthorizationMap` from env-templated config, and LDAP-secures both the Jetty web console and a hawtio management console through the same realm; the **delivery surface** adds a `bats` templating unit suite, three asserting e2e harnesses (the Docker-Compose authN/authZ matrix plus the broker's Jolokia endpoint, the Samba AD domain controller, and the Apache DS backend), and a GitHub Actions pipeline (a `hadolint` + Mermaid-lint + C4-diagram-drift static-check, a **five**-image Trivy-scanned build matrix, and a `ci-pass` aggregate gate) on Renovate-managed, `mise`-pinned tooling.
 
-```mermaid
-C4Context
-    title ActiveMQ LDAP Authentication and Authorization
+<p align="center"><img src="docs/diagrams/out/c4-context.png" alt="C4 System Context — a messaging client and an operator interact with the ActiveMQ broker, which binds to an external LDAP directory (OpenLDAP / Apache DS / Samba AD) for authentication and per-destination authorization; the operator manages the directory via phpLDAPadmin/LAM" width="1000"></p>
 
-    Person(client, "Messaging client", "Produces/consumes over OpenWire, AMQP, STOMP, MQTT")
-    Person(operator, "Operator", "Browses and manages the directory")
-
-    System(amq, "ActiveMQ Broker", "JAAS LDAPLoginModule (authN) + cachedLDAPAuthorizationMap (authZ); secured Jetty console")
-    System_Ext(ldap, "LDAP Directory", "OpenLDAP / Apache DS / Samba AD: users, groups, per-destination ACLs")
-    System_Ext(ui, "phpLDAPadmin / LAM", "LDAP web admin UI")
-
-    Rel(client, amq, "Connect, produce/consume", "authenticated")
-    Rel(amq, ldap, "Bind + authorize", "LDAP/LDAPS")
-    Rel(operator, ui, "Manage entries", "HTTPS")
-    Rel(ui, ldap, "Read/write", "LDAP")
-```
+<p align="center"><em>Source: <a href="docs/diagrams/c4-context.puml"><code>docs/diagrams/c4-context.puml</code></a> — regenerate with <code>make diagrams</code>.</em></p>
 
 The **shared directory tree** every backend serves — users, role groups, the broker bind account, and the per-destination ACL entries the `cachedLDAPAuthorizationMap` reads (base DN `dc=activemq,dc=apache,dc=org`):
 
@@ -198,8 +185,11 @@ Operator-tunable values live in two files (keep version pins in sync between the
 | `make build-apacheds` | Build the Apache DS (AD-mimic) image |
 | `make up` / `make down` / `make logs` | Manage the default Compose stack |
 | `make lint` | hadolint the Dockerfiles (pinned image) |
-| `make mermaid-lint` | Validate the README Mermaid diagram |
-| `make static-check` | Composite static gate: `lint` + `mermaid-lint` (the CI `static-check` job) |
+| `make mermaid-lint` | Validate the README Mermaid diagram (LDAP tree) |
+| `make diagrams` | Render the C4 context diagram (`docs/diagrams/*.puml` → PNG, pinned `plantuml/plantuml`) |
+| `make diagrams-check` | Fail if the committed C4 PNG is stale vs its `.puml` source (CI drift gate) |
+| `make diagrams-clean` | Remove rendered diagram artefacts |
+| `make static-check` | Composite static gate: `lint` + `mermaid-lint` + `diagrams-check` (the CI `static-check` job) |
 | `make test` | Unit tests (bats — config templating) |
 | `make e2e` | Bring up stack + assert the LDAP authN/authZ contract |
 | `make e2e-samba` | Provision the Samba AD DC + assert it serves LDAP (`--privileged`) |
@@ -219,7 +209,7 @@ GitHub Actions ([`CI`](.github/workflows/ci.yml)) runs on every push and pull re
 | Job | What it does |
 |-----|--------------|
 | `changes` | `dorny/paths-filter` gate — doc-only changes skip the heavy jobs below while `ci-pass` still goes green |
-| `static-check` | `make static-check` — hadolint over the five Dockerfiles + README Mermaid lint |
+| `static-check` | `make static-check` — hadolint over the five Dockerfiles + README Mermaid lint + C4 diagram drift-check |
 | `docker` | Matrix-builds the five Dockerfiles (`6.2.6/`, `samba/`, `openldap/`, `hawtio/`, `apacheds-ad/`), each followed by a blocking Trivy CVE scan |
 | `test` | `bats` unit tests for the config-templating logic |
 | `e2e` | Builds the broker image, composes the OpenLDAP + ActiveMQ stack, and asserts the LDAP authN/authZ matrix (queues + topics) and the Jolokia/console/hawtio logins |
