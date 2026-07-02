@@ -1,0 +1,39 @@
+@startuml c4-context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.13.0/C4_Context.puml
+
+' Landscape layout — a top-down Context view stacks into a tall portrait tower.
+LAYOUT_LEFT_RIGHT()
+
+' Modern flat styling: no shadows, sharper corners, clean sans-serif, modern palette.
+skinparam backgroundColor #FAFAFA
+skinparam shadowing false
+skinparam roundCorner 4
+skinparam defaultFontName "Inter, Helvetica, Arial, sans-serif"
+skinparam defaultFontSize 13
+skinparam ArrowColor #37474F
+skinparam ArrowThickness 1.2
+skinparam rectangleBorderThickness 1.3
+
+UpdateElementStyle("person", $fontColor="#FFFFFF", $bgColor="#0F766E", $borderColor="#134E4A")
+UpdateElementStyle("system", $fontColor="#FFFFFF", $bgColor="#2563EB", $borderColor="#1E3A8A")
+' External systems keep C4-PlantUML's conventional grey — the standard C4 signal
+' for "outside our boundary / not our control". (Do NOT restyle to the container_db
+' violet: it would read as an owned datastore, and mistyping the element tag name
+' silently no-ops anyway — see /architecture-diagrams "silently-ignored style keys".)
+
+title System Context — ActiveMQ LDAP Authentication and Authorization
+
+Person(client, "Messaging client", "Produces/consumes over OpenWire, AMQP, STOMP, MQTT")
+Person(operator, "Operator", "Browses and manages the directory")
+
+System(amq, "ActiveMQ Broker", "JAAS LDAPLoginModule (authN) + cachedLDAPAuthorizationMap (authZ); LDAP-secured Jetty + hawtio consoles")
+System_Ext(ldap, "LDAP Directory", "OpenLDAP / Apache DS / Samba AD: users, groups, per-destination ACLs")
+System_Ext(ui, "phpLDAPadmin / LAM", "LDAP web admin UI")
+
+Rel(client, amq, "Connect, produce/consume", "authenticated")
+Rel(amq, ldap, "Bind + authorize", "LDAP/LDAPS")
+Rel(operator, ui, "Manage entries", "HTTPS")
+Rel(ui, ldap, "Read/write", "LDAP")
+
+SHOW_LEGEND()
+@enduml
